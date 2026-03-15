@@ -17,18 +17,22 @@ export default function DownloadPanel({ phase, progress, label, urls, error, PHA
       )}
 
       {phase === PHASES.DONE && (
-        <>
+              <>
           <p className="text-xs text-gray-500">Reporte generado</p>
           <div className="flex gap-2">
             {urls.pdf && (
-              <a href={urls.pdf} target="_blank" rel="noreferrer"
+              <a
+                href={`${import.meta.env.VITE_API_URL}${urls.pdf}`}
+                download={`reporte.pdf`}
                 className="flex-1 py-2 text-center text-xs font-medium rounded-lg border
                   border-orange-200 bg-orange-50 text-orange-800 hover:bg-orange-100 transition">
                 Descargar PDF
               </a>
             )}
             {urls.pptx && (
-              <a href={urls.pptx} target="_blank" rel="noreferrer"
+              <a
+                href={`${import.meta.env.VITE_API_URL}${urls.pptx}`}
+                download={`reporte.pptx`}
                 className="flex-1 py-2 text-center text-xs font-medium rounded-lg border
                   border-purple-200 bg-purple-50 text-purple-800 hover:bg-purple-100 transition">
                 Descargar PPTX

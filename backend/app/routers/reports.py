@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, Depends
+from fastapi.responses import Response
 from app.models.schemas import GenerateResponse, StatusResponse, JobStatus
 from app.services.file_service import parse_file
 from app.services.claude_service import analyze_sales_data
@@ -10,6 +11,7 @@ import json
 
 router = APIRouter()
 jobs: dict = {}
+files_store: dict = {}
 
 async def get_current_user(token_data: dict = Depends(verify_token)):
     return await get_or_create_user(
@@ -23,19 +25,31 @@ async def process_report(job_id: str, file_data: dict, formats: list):
         analysis = await analyze_sales_data(file_data)
 
         jobs[job_id].update({'progress': 60, 'message': 'Generando documentos...'})
-        result = {'status': JobStatus.done, 'progress': 100, 'message': 'Listo'}
+        result = {
+            'status': JobStatus.done,
+            'progress': 100,
+            'message': 'Listo',
+            'pdf_url': None,
+            'pptx_url': None,
+        }
 
         if 'pdf' in formats:
-            pdf_bytes = generate_pdf(analysis)
-            result['pdf_url'] = f"data:application/pdf;base64,{__import__('base64').b64encode(pdf_bytes).decode()}"
+            profile = file_data.get('company_profile', {})
+            pdf_bytes = generate_pdf(analysis, file_data.get('report_type', 'ventas'), profile)
+            files_store[f"{job_id}_pdf"] = pdf_bytes
+            result['pdf_url'] = f"/api/reports/download/{job_id}/pdf"
 
         if 'pptx' in formats:
             pptx_bytes = generate_pptx(analysis)
-            result['pptx_url'] = f"data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,{__import__('base64').b64encode(pptx_bytes).decode()}"
+            files_store[f"{job_id}_pptx"] = pptx_bytes
+            result['pptx_url'] = f"/api/reports/download/{job_id}/pptx"
 
         jobs[job_id].update(result)
 
     except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        print(error_detail)
         jobs[job_id].update({
             'status': JobStatus.error,
             'progress': 0,
@@ -81,3 +95,27 @@ def get_status(job_id: str):
         )
     job = jobs[job_id]
     return StatusResponse(job_id=job_id, **job)
+
+@router.get('/reports/download/{job_id}/pdf')
+def download_pdf(job_id: str):
+    key = f"{job_id}_pdf"
+    if key not in files_store:
+        from fastapi import HTTPException
+        raise HTTPException(404, "Archivo no encontrado")
+    return Response(
+        content=files_store[key],
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=reporte_{job_id[:8]}.pdf"}
+    )
+
+@router.get('/reports/download/{job_id}/pptx')
+def download_pptx(job_id: str):
+    key = f"{job_id}_pptx"
+    if key not in files_store:
+        from fastapi import HTTPException
+        raise HTTPException(404, "Archivo no encontrado")
+    return Response(
+        content=files_store[key],
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": f"attachment; filename=reporte_{job_id[:8]}.pptx"}
+    )
