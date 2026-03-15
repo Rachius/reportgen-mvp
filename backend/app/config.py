@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     gcs_bucket_name: str
     gcp_region: str
     database_url: str
+    firebase_credentials_path: str
     environment: str = "development"
     max_file_size_mb: int = 10
 
