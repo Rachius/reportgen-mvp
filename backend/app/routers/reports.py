@@ -6,6 +6,7 @@ from app.services.claude_service import analyze_sales_data
 from app.services.report_service import generate_pdf, generate_pptx
 from app.services.auth_service import verify_token, get_or_create_user
 from app.services.profile_service import get_profile
+from app.services.subscription_service import can_generate_report, increment_report_usage
 import uuid
 import json
 
@@ -64,6 +65,11 @@ async def generate_report(
     formats: str = Form(...),
     user=Depends(get_current_user)
 ):
+    allowed, message = await can_generate_report(user["id"])
+    if not allowed:
+        from fastapi import HTTPException
+        raise HTTPException(403, message)
+
     job_id = str(uuid.uuid4())
     formats_list = json.loads(formats)
 
@@ -72,6 +78,8 @@ async def generate_report(
 
     profile = await get_profile(user["id"])
     file_data['company_profile'] = profile
+
+    await increment_report_usage(user["id"])
 
     jobs[job_id] = {
         'status': JobStatus.processing,

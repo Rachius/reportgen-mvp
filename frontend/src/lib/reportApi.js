@@ -44,3 +44,13 @@ export async function loginToBackend() {
   const { data } = await api.post('/api/auth/login')
   return data
 }
+
+export async function getSubscription() {
+  const { data } = await api.get('/api/subscription')
+  return data
+}
+
+export async function createCheckout() {
+  const { data } = await api.post('/api/subscription/checkout')
+  return data
+}

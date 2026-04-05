@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
+import Subscription from './pages/Subscription'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
@@ -27,6 +28,10 @@ function AppRoutes() {
         <ProtectedRoute><Profile /></ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+      <Route path="/subscription/success" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+      <Route path="/subscription/cancel" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+      <Route path="/subscription/pending" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
     </Routes>
   )
 }
