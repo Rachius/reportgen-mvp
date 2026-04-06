@@ -58,30 +58,33 @@ async def increment_report_usage(user_id: str):
 
 async def create_checkout_url(user_id: str, user_email: str) -> str:
     preference_data = {
-        "items": [{
-            "title": "ReportGen Starter — Suscripción mensual",
-            "quantity": 1,
-            "unit_price": STARTER_PRICE,
-            "currency_id": "ARS",
-        }],
-        "payer": {"email": user_email},
-        "back_urls": {
-            "success": f"{settings.app_base_url}/subscription/success",
-            "failure": f"{settings.app_base_url}/subscription/cancel",
-            "pending": f"{settings.app_base_url}/subscription/pending",
-        },
-        "auto_return": "approved",
-        "notification_url": f"https://particularly-unsquared-zaria.ngrok-free.dev/api/subscription/webhook",
-        "metadata": {"user_id": user_id},
-        "statement_descriptor": "REPORTGEN",
-    }
+    "items": [{
+        "title": "ReportGen Starter — Suscripción mensual",
+        "quantity": 1,
+        "unit_price": STARTER_PRICE,
+        "currency_id": "ARS",
+    }],
+    "payer": {"email": user_email},
+    "back_urls": {
+        "success": f"{settings.app_base_url}/subscription/success",
+        "failure": f"{settings.app_base_url}/subscription/cancel",
+        "pending": f"{settings.app_base_url}/subscription/pending",
+    },
+    "notification_url": f"https://particularly-unsquared-zaria.ngrok-free.dev/api/subscription/webhook",
+    "metadata": {"user_id": str(user_id)},
+    "statement_descriptor": "REPORTGEN",
+}
 
     response = sdk.preference().create(preference_data)
+
+    if response["status"] != 201:
+        raise ValueError(f"MP error: {response}")
+
     preference = response["response"]
 
     if settings.environment == "development":
-        return preference["sandbox_init_point"]
-    return preference["init_point"]
+        return preference.get("sandbox_init_point") or preference.get("init_point")
+    return preference.get("init_point")
 
 async def activate_starter_plan(user_id: str, mp_payment_id: str = None):
     from datetime import timedelta
@@ -156,6 +159,37 @@ async def calculate_risk_score(email: str, ip: str) -> int:
         if result and result['cnt'] > 2:
             score += 30
     return min(score, 100)
+
+
+
+
+def verify_mp_signature(payload: bytes, x_signature: str, x_request_id: str) -> bool:
+    if not x_signature or not settings.mp_webhook_secret:
+        return False
+
+    parts = {}
+    for part in x_signature.split(","):
+        if "=" in part:
+            k, v = part.strip().split("=", 1)
+            parts[k] = v
+
+    ts = parts.get("ts", "")
+    received_hash = parts.get("v1", "")
+
+    manifest = f"id:{x_request_id};request-id:{x_request_id};ts:{ts};"
+    expected = hmac.new(
+        settings.mp_webhook_secret.encode(),
+        manifest.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected, received_hash)
+
+
+
+
+
+
 
 async def create_user_subscription(user_id: str, email: str, ip: str = None):
     risk = await calculate_risk_score(email, ip or "")

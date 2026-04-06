@@ -37,6 +37,16 @@ async def checkout(user=Depends(get_current_user)):
 
 @router.post("/subscription/webhook")
 async def webhook(request: Request):
+    payload = await request.body()
     data = await request.json()
+
+    # Validar que viene de MP en producción
+    if settings.environment != "development":
+        x_signature = request.headers.get("x-signature", "")
+        x_request_id = request.headers.get("x-request-id", "")
+        if not verify_mp_signature(payload, x_signature, x_request_id):
+            from fastapi import HTTPException
+            raise HTTPException(400, "Firma inválida")
+
     await handle_webhook(data)
     return {"received": True}
