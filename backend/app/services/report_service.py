@@ -44,7 +44,7 @@ def generate_pptx(analysis: dict) -> bytes:
     accent.fill.fore_color.rgb = TEAL_RGB
     accent.line.fill.background()
     add_textbox(slide1, analysis['titulo'], 0.5, 2.5, 12, 1.2, size=32, bold=True, color=DARK_RGB)
-    add_textbox(slide1, 'Reporte generado por ReportGen', 0.5, 3.9, 8, 0.5, size=14, color=GRAY_RGB)
+    add_textbox(slide1, 'Reporte generado por Reporti', 0.5, 3.9, 8, 0.5, size=14, color=GRAY_RGB)
 
     slide2 = add_slide()
     add_textbox(slide2, 'Resumen ejecutivo', 0.4, 0.3, 12, 0.6, size=20, bold=True, color=TEAL_RGB)

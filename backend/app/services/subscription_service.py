@@ -59,7 +59,7 @@ async def increment_report_usage(user_id: str):
 async def create_checkout_url(user_id: str, user_email: str) -> str:
     preference_data = {
     "items": [{
-        "title": "ReportGen Starter — Suscripción mensual",
+        "title": "Reporti Starter — Suscripción mensual",
         "quantity": 1,
         "unit_price": STARTER_PRICE,
         "currency_id": "ARS",

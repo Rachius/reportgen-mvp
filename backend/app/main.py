@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routers import reports, profiles, auth, subscriptions
+from app.routers import reports, profiles, auth, subscriptions, admin, consultations
 from app.services.db_service import connect, disconnect
 
 
 app = FastAPI(
-    title="ReportGen API",
+    title="Reporti API",
     version="0.1.0",
     docs_url="/docs" if settings.environment == "development" else None
 )
@@ -31,6 +31,8 @@ app.include_router(reports.router, prefix="/api")
 app.include_router(profiles.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(subscriptions.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(consultations.router, prefix="/api")
 
 @app.get("/health")
 def health():

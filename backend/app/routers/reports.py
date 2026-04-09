@@ -20,6 +20,7 @@ async def get_current_user(token_data: dict = Depends(verify_token)):
         email=token_data.get("email", "")
     )
 
+
 async def process_report(job_id: str, file_data: dict, formats: list):
     try:
         jobs[job_id].update({'progress': 30, 'message': 'Analizando datos con Claude...'})
@@ -45,17 +46,35 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             files_store[f"{job_id}_pptx"] = pptx_bytes
             result['pptx_url'] = f"/api/reports/download/{job_id}/pptx"
 
+        # Guardar en DB
+        from app.services.db_service import database
+        import uuid as uuid_lib
+        await database.execute("""
+            INSERT INTO reports (id, user_id, filename, report_type, formats, status, pdf_url, pptx_url)
+            VALUES (:id, :user_id, :filename, :report_type, :formats, 'done', :pdf_url, :pptx_url)
+        """, values={
+            "id": str(uuid_lib.uuid4()),
+            "user_id": str(file_data.get('user_id', '')),
+            "filename": file_data.get('filename', ''),
+            "report_type": file_data.get('report_type', 'ventas'),
+            "formats": formats,
+            "pdf_url": result.get('pdf_url', ''),
+            "pptx_url": result.get('pptx_url', ''),
+        })
+
         jobs[job_id].update(result)
 
     except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        print(error_detail)
         jobs[job_id].update({
             'status': JobStatus.error,
             'progress': 0,
             'message': f'Error: {str(e)}'
         })
+
+
+
+
+
 
 @router.post('/reports/generate', response_model=GenerateResponse)
 async def generate_report(
@@ -80,6 +99,7 @@ async def generate_report(
     file_data['company_profile'] = profile
 
     await increment_report_usage(user["id"])
+    file_data['user_id'] = str(user["id"])
 
     jobs[job_id] = {
         'status': JobStatus.processing,
