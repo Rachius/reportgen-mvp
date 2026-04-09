@@ -1,57 +1,88 @@
 export default function DownloadPanel({ phase, progress, label, urls, error, PHASES, onNew }) {
   return (
-    <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-white">
+    <div className="card space-y-3">
       {phase !== PHASES.DONE && phase !== PHASES.ERROR && (
-        <>
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{label}</span>
-            <span>{progress}%</span>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{label}</span>
+            <span style={{ color: 'var(--blue-dark)', fontSize: '0.8rem', fontWeight: 600 }}>
+              {progress}%
+            </span>
           </div>
-          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div className="progress-track">
             <div
-              className="h-full bg-teal-500 rounded-full transition-all duration-500"
+              className="progress-fill-blue"
               style={{ width: `${progress}%` }}
             />
           </div>
-        </>
+        </div>
       )}
 
       {phase === PHASES.DONE && (
-              <>
-          <p className="text-xs text-gray-500">Reporte generado</p>
+        <div className="space-y-3">
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+            ¡Reporte generado!
+          </p>
           <div className="flex gap-2">
             {urls.pdf && (
               <a
                 href={`${import.meta.env.VITE_API_URL}${urls.pdf}`}
-                download={`reporte.pdf`}
-                className="flex-1 py-2 text-center text-xs font-medium rounded-lg border
-                  border-orange-200 bg-orange-50 text-orange-800 hover:bg-orange-100 transition">
+                download="reporte.pdf"
+                className="btn btn-primary"
+                style={{ flex: 1, textAlign: 'center' }}
+              >
                 Descargar PDF
               </a>
             )}
             {urls.pptx && (
               <a
                 href={`${import.meta.env.VITE_API_URL}${urls.pptx}`}
-                download={`reporte.pptx`}
-                className="flex-1 py-2 text-center text-xs font-medium rounded-lg border
-                  border-purple-200 bg-purple-50 text-purple-800 hover:bg-purple-100 transition">
+                download="reporte.pptx"
+                className="btn btn-outline"
+                style={{ flex: 1, textAlign: 'center' }}
+              >
                 Descargar PPTX
               </a>
             )}
           </div>
-          <button onClick={onNew} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition">
+          <button
+            onClick={onNew}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              padding: '0.4rem',
+              transition: 'var(--transition-fast)',
+            }}
+            onMouseEnter={e => e.target.style.color = 'var(--text-secondary)'}
+            onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
+          >
             generar nuevo reporte
           </button>
-        </>
+        </div>
       )}
 
       {phase === PHASES.ERROR && (
-        <>
-          <p className="text-xs text-red-500">{error}</p>
-          <button onClick={onNew} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition">
+        <div className="space-y-3">
+          <p style={{ color: '#DC2626', fontSize: '0.8rem' }}>{error}</p>
+          <button
+            onClick={onNew}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              padding: '0.4rem',
+            }}
+          >
             intentar de nuevo
           </button>
-        </>
+        </div>
       )}
     </div>
   )

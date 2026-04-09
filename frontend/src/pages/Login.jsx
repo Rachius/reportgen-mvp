@@ -74,37 +74,52 @@ export default function Login() {
     }
   }
 
-  const switchMode = (newMode) => {
-    setMode(newMode)
-    clearMessages()
-  }
+  const switchMode = (newMode) => { setMode(newMode); clearMessages() }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--surface-2)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+    }}>
+      <div style={{ width: '100%', maxWidth: 360 }}>
 
+        {/* Logo */}
         <div className="flex items-center gap-2 mb-8 justify-center">
-          <div className="w-2 h-2 rounded-full bg-teal-600" />
-          <span className="font-medium text-gray-800 text-lg">ReportGen</span>
+          <div style={{
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            background: 'var(--blue)',
+          }} />
+          <span style={{
+            color: 'var(--text-primary)',
+            fontWeight: 700,
+            fontSize: '1.25rem',
+          }}>
+            Reporti
+          </span>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-
-          <h1 className="text-base font-medium text-gray-800">
+        <div className="card space-y-4">
+          <h1 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>
             {mode === 'login' && 'Iniciá sesión'}
             {mode === 'register' && 'Creá tu cuenta'}
             {mode === 'reset' && 'Recuperar contraseña'}
           </h1>
 
+          {/* Google */}
           {mode !== 'reset' && (
             <button
               onClick={handleGoogle}
               disabled={googleLoading}
-              className="w-full flex items-center justify-center gap-2 py-2 border
-                border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50
-                transition disabled:opacity-50"
+              className="btn btn-outline"
+              style={{ width: '100%', justifyContent: 'center', gap: 8 }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24">
+              <svg width="15" height="15" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
@@ -116,65 +131,86 @@ export default function Login() {
 
           {mode !== 'reset' && (
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-100" />
-              <span className="text-xs text-gray-400">o con email</span>
-              <div className="flex-1 h-px bg-gray-100" />
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>o con email</span>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
           )}
 
+          {/* Fields */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Email</label>
+              <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                 placeholder="tu@email.com"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                  focus:outline-none focus:border-teal-400 transition"
+                className="input"
               />
             </div>
-
             {mode !== 'reset' && (
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Contraseña</label>
+                <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+                  Contraseña
+                </label>
                 <input
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                   placeholder="mínimo 6 caracteres"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                    focus:outline-none focus:border-teal-400 transition"
+                  className="input"
                 />
               </div>
             )}
           </div>
 
+          {/* Messages */}
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 border border-red-100
-              rounded-lg px-3 py-2">{error}</p>
+            <p style={{
+              color: '#DC2626',
+              fontSize: '0.75rem',
+              background: '#FEF2F2',
+              border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 'var(--radius-btn)',
+              padding: '0.5rem 0.75rem',
+            }}>
+              {error}
+            </p>
           )}
           {info && (
-            <p className="text-xs text-teal-700 bg-teal-50 border border-teal-100
-              rounded-lg px-3 py-2">{info}</p>
+            <p style={{
+              color: 'var(--blue-darker)',
+              fontSize: '0.75rem',
+              background: 'var(--blue-light)',
+              border: '1px solid var(--blue)',
+              borderRadius: 'var(--radius-btn)',
+              padding: '0.5rem 0.75rem',
+            }}>
+              {info}
+            </p>
           )}
 
+          {/* Actions */}
           {mode === 'reset' ? (
             <>
               <button
                 onClick={handleReset}
                 disabled={loading || !email}
-                className="w-full py-2.5 rounded-lg bg-teal-600 text-white font-medium
-                  text-sm hover:bg-teal-700 transition disabled:bg-gray-200
-                  disabled:text-gray-400 disabled:cursor-not-allowed"
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
               >
                 {loading ? 'Enviando...' : 'Enviar link de recuperación'}
               </button>
-              <p className="text-xs text-center text-gray-400">
-                <button onClick={() => switchMode('login')}
-                  className="text-teal-600 hover:underline">
+              <p style={{ textAlign: 'center', fontSize: '0.75rem' }}>
+                <button
+                  onClick={() => switchMode('login')}
+                  style={{ color: 'var(--blue-dark)', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
                   Volver al login
                 </button>
               </p>
@@ -184,29 +220,30 @@ export default function Login() {
               <button
                 onClick={handleSubmit}
                 disabled={loading || !email || !password}
-                className="w-full py-2.5 rounded-lg bg-teal-600 text-white font-medium
-                  text-sm hover:bg-teal-700 transition disabled:bg-gray-200
-                  disabled:text-gray-400 disabled:cursor-not-allowed"
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
               >
-                {loading
-                  ? 'Cargando...'
-                  : mode === 'login' ? 'Ingresar' : 'Crear cuenta'}
+                {loading ? 'Cargando...' : mode === 'login' ? 'Ingresar' : 'Crear cuenta'}
               </button>
 
               {mode === 'login' && (
-                <p className="text-xs text-center">
-                  <button onClick={() => switchMode('reset')}
-                    className="text-gray-400 hover:text-teal-600 transition">
+                <p style={{ textAlign: 'center', fontSize: '0.75rem' }}>
+                  <button
+                    onClick={() => switchMode('reset')}
+                    style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', transition: 'var(--transition-fast)' }}
+                    onMouseEnter={e => e.target.style.color = 'var(--blue-dark)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
+                  >
                     ¿Olvidaste tu contraseña?
                   </button>
                 </p>
               )}
 
-              <p className="text-xs text-center text-gray-400">
+              <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                 {mode === 'login' ? '¿No tenés cuenta?' : '¿Ya tenés cuenta?'}{' '}
                 <button
                   onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
-                  className="text-teal-600 hover:underline"
+                  style={{ color: 'var(--blue-dark)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                 >
                   {mode === 'login' ? 'Registrate' : 'Iniciá sesión'}
                 </button>

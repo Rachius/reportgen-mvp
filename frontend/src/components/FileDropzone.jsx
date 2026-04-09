@@ -26,21 +26,58 @@ export default function FileDropzone({ file, onFile, onClear }) {
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        className={`border-2 border-dashed rounded-xl p-10 text-center transition cursor-pointer
-          ${dragging ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-gray-300'}
-          ${file ? 'cursor-default' : ''}`}
+        style={{
+          border: dragging
+            ? '2px dashed var(--blue)'
+            : '2px dashed var(--border-strong)',
+          borderRadius: 'var(--radius-card)',
+          padding: '2rem',
+          textAlign: 'center',
+          cursor: file ? 'default' : 'pointer',
+          background: dragging ? 'var(--blue-light)' : 'var(--surface)',
+          transition: 'var(--transition-fast)',
+        }}
       >
         {!file ? (
-          <>
-            <p className="text-sm font-medium text-gray-700">Arrastrá tu archivo aquí</p>
-            <p className="text-xs text-gray-400 mt-1">CSV o Excel hasta 10 MB</p>
-          </>
+          <div className="flex flex-col items-center gap-2">
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 'var(--radius-card)',
+              background: 'var(--blue-light)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--blue-dark)',
+              fontSize: '1.1rem',
+            }}>
+              📄
+            </div>
+            <p style={{ color: 'var(--text-primary)', fontWeight: 500, fontSize: '0.875rem' }}>
+              Arrastrá tu archivo aquí
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+              CSV o Excel hasta 10 MB
+            </p>
+          </div>
         ) : (
           <div className="flex items-center justify-center gap-3">
-            <span className="text-sm text-gray-600">{file.name}</span>
+            <span style={{ fontSize: '1rem' }}>📊</span>
+            <span style={{ color: 'var(--text-primary)', fontSize: '0.875rem', fontWeight: 500 }}>
+              {file.name}
+            </span>
             <button
               onClick={(e) => { e.stopPropagation(); onFile(null); onClear() }}
-              className="text-xs text-gray-400 hover:text-red-500 transition"
+              style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.75rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'var(--transition-fast)',
+              }}
+              onMouseEnter={e => e.target.style.color = '#DC2626'}
+              onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
             >
               quitar
             </button>
@@ -48,9 +85,15 @@ export default function FileDropzone({ file, onFile, onClear }) {
         )}
       </div>
       {validationError && (
-        <p className="text-xs text-red-500 mt-1">{validationError}</p>
+        <p style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: 4 }}>{validationError}</p>
       )}
-      <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv,.xlsx,.xls"
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files[0])}
+      />
     </div>
   )
 }

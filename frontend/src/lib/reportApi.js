@@ -54,3 +54,12 @@ export async function createCheckout() {
   const { data } = await api.post('/api/subscription/checkout')
   return data
 }
+
+export async function getRecentReports(limit = 5) {
+  try {
+    const { data } = await api.get('/api/reports/history', { params: { limit } })
+    return data
+  } catch {
+    return []
+  }
+}

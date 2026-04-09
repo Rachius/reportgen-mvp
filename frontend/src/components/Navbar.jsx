@@ -1,98 +1,90 @@
 import { useAuth } from '../context/AuthContext'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { getSubscription } from '../lib/reportApi'
+import { useTheme } from '../context/ThemeContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
-  const location = useLocation()
-  const [plan, setPlan] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  useEffect(() => {
-    if (!user) return
-    getSubscription().then(sub => setPlan(sub.plan)).catch(() => {})
-    user.getIdTokenResult().then(result => {
-      setIsAdmin(!!result.claims.admin)
-    }).catch(() => {})
-  }, [user])
 
   const handleLogout = async () => {
     await logout()
     navigate('/login')
   }
 
-  const showConsultations = plan === 'starter' || plan === 'pro'
-
   return (
-    <nav className="border-b border-gray-100 bg-white px-6 py-3">
-      <div className="max-w-2xl mx-auto flex items-center justify-between">
+    <nav style={{
+      background: 'var(--surface)',
+      borderBottom: '1px solid var(--border)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 50,
+    }}>
+      <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
+        {/* Logo */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 hover:opacity-70 transition"
+          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
         >
-          <div className="w-2 h-2 rounded-full bg-teal-600" />
-          <span className="font-medium text-gray-800">ReportGen</span>
+          <div style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: 'var(--blue)',
+            flexShrink: 0,
+          }} />
+          <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>
+            Reporti
+          </span>
         </button>
 
-        <div className="flex items-center gap-4">
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          {/* Theme toggle */}
           <button
-            onClick={() => navigate('/profile')}
-            className={`text-sm transition ${
-              location.pathname === '/profile'
-                ? 'text-teal-600 font-medium'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-btn)',
+              border: '1px solid var(--border-strong)',
+              background: 'var(--surface-2)',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              transition: 'var(--transition-fast)',
+            }}
           >
-            Mi perfil
-          </button>
-          <span className="text-gray-200">|</span>
-          <button
-            onClick={() => navigate('/subscription')}
-            className={`text-sm transition ${
-              location.pathname.startsWith('/subscription')
-                ? 'text-teal-600 font-medium'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            Mi plan
+            {theme === 'dark' ? '☀️' : '🌙'}
           </button>
 
-          {showConsultations && (
-            <button
-              onClick={() => navigate('/consultations')}
-              className={`text-sm transition ${
-                location.pathname === '/consultations'
-                  ? 'text-teal-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              Consultas
-            </button>
-          )}
+          {/* Divider */}
+          <span style={{ color: 'var(--border-strong)', fontSize: '1rem' }}>|</span>
 
-          <span className="text-gray-200">|</span>
-          <span className="text-xs text-gray-400 max-w-32 truncate">{user?.email}</span>
+          {/* Email */}
+          <span style={{
+            color: 'var(--text-muted)',
+            fontSize: '0.75rem',
+            maxWidth: 160,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {user?.email}
+          </span>
 
+          {/* Logout */}
           <button
             onClick={handleLogout}
-            className="text-xs text-gray-400 hover:text-red-500 transition"
+            className="btn btn-outline"
+            style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem' }}
           >
             Salir
           </button>
-
-          {isAdmin && (
-            <>
-              <span className="text-gray-200">|</span>
-              <button
-                onClick={() => navigate('/admin')}
-                className="text-xs text-gray-400 hover:text-gray-600 transition"
-              >
-                Admin
-              </button>
-            </>
-          )}
         </div>
       </div>
     </nav>

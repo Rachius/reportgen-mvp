@@ -1,14 +1,51 @@
 import { useEffect, useState } from 'react'
 import { getSubscription, createCheckout } from '../lib/reportApi'
-import Navbar from '../components/Navbar'
+import PageLayout from '../components/PageLayout'
 import { useLocation } from 'react-router-dom'
 
-const PLAN_LABELS = { free: 'Free', starter: 'Starter', pro: 'Pro' }
-const PLAN_COLORS = {
-  free: 'bg-gray-100 text-gray-700',
-  starter: 'bg-teal-100 text-teal-800',
-  pro: 'bg-purple-100 text-purple-800',
-}
+const PLANS = [
+  {
+    key: 'free',
+    name: 'Free',
+    price: 'Gratis',
+    period: '',
+    accentColor: 'var(--blue)',
+    features: [
+      '3 reportes totales',
+      'Solo PDF',
+      'Sin perfil de empresa',
+    ],
+  },
+  {
+    key: 'starter',
+    name: 'Starter',
+    price: '$17.500 ARS',
+    period: '/mes',
+    accentColor: 'var(--blue)',
+    features: [
+      '10 reportes por mes',
+      'PDF + PPTX',
+      'Perfil de empresa personalizado',
+      '3 consultas al analista',
+      'Renovación automática mensual',
+    ],
+  },
+  {
+    key: 'pro',
+    name: 'Pro',
+    price: '$35 USD',
+    period: '/mes',
+    accentColor: 'var(--orange)',
+    features: [
+      '30 reportes por mes',
+      'PDF + PPTX',
+      'Perfil de empresa personalizado',
+      '10 consultas al analista',
+      'Soporte prioritario',
+    ],
+    comingSoon: true,
+  },
+]
 
 export default function Subscription() {
   const [sub, setSub] = useState(null)
@@ -33,134 +70,224 @@ export default function Subscription() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="flex items-center justify-center pt-32">
-        <p className="text-sm text-gray-400">Cargando...</p>
+    <PageLayout>
+      <div className="flex items-center justify-center h-40">
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Cargando...</p>
       </div>
-    </div>
+    </PageLayout>
   )
 
-  const pct = sub ? Math.round((sub.reports_used / sub.reports_limit) * 100) : 0
+  const reportsPct = sub ? Math.min(100, Math.round((sub.reports_used / sub.reports_limit) * 100)) : 0
+  const consultPct = sub?.consultations_limit
+    ? Math.min(100, Math.round(((sub.consultations_used || 0) / sub.consultations_limit) * 100))
+    : 0
+  const renewalDate = sub?.current_period_end
+    ? new Date(sub.current_period_end).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-xl mx-auto px-4 py-10 space-y-6">
-
-        <div>
-          <h1 className="text-lg font-medium text-gray-800">Mi suscripción</h1>
-          <p className="text-sm text-gray-500 mt-1">Gestioná tu plan y el uso de reportes.</p>
+    <PageLayout>
+      <div style={{ maxWidth: 760, margin: '0 auto' }}>
+        <div className="mb-6">
+          <h1 style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '1.25rem' }}>Mi plan</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: 4 }}>
+            Gestioná tu suscripción y el uso de reportes.
+          </p>
         </div>
 
+        {/* Status banners */}
         {isSuccess && (
-          <div className="bg-teal-50 border border-teal-200 rounded-xl p-4">
-            <p className="text-sm font-medium text-teal-800">¡Suscripción activada!</p>
-            <p className="text-xs text-teal-700 mt-1">
+          <div style={{
+            background: '#ECFDF5',
+            border: '1px solid #6EE7B7',
+            borderRadius: 'var(--radius-card)',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+          }}>
+            <p style={{ color: '#065F46', fontWeight: 600, fontSize: '0.875rem' }}>¡Suscripción activada!</p>
+            <p style={{ color: '#047857', fontSize: '0.75rem', marginTop: 2 }}>
               Ya tenés acceso al plan Starter. Podés empezar a generar reportes.
             </p>
           </div>
         )}
-
         {isPending && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <p className="text-sm font-medium text-amber-800">Pago pendiente</p>
-            <p className="text-xs text-amber-700 mt-1">
+          <div style={{
+            background: '#FFFBEB',
+            border: '1px solid #FCD34D',
+            borderRadius: 'var(--radius-card)',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+          }}>
+            <p style={{ color: '#92400E', fontWeight: 600, fontSize: '0.875rem' }}>Pago pendiente</p>
+            <p style={{ color: '#B45309', fontSize: '0.75rem', marginTop: 2 }}>
               Tu pago está siendo procesado. Te notificaremos cuando se confirme.
             </p>
           </div>
         )}
-
         {!sub?.approved && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <p className="text-sm font-medium text-amber-800">Cuenta pendiente de aprobación</p>
-            <p className="text-xs text-amber-700 mt-1">
+          <div style={{
+            background: '#FFFBEB',
+            border: '1px solid #FCD34D',
+            borderRadius: 'var(--radius-card)',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+          }}>
+            <p style={{ color: '#92400E', fontWeight: 600, fontSize: '0.875rem' }}>Cuenta pendiente de aprobación</p>
+            <p style={{ color: '#B45309', fontSize: '0.75rem', marginTop: 2 }}>
               Tu cuenta está siendo revisada. Te avisaremos cuando esté activa.
             </p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Plan actual</span>
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${PLAN_COLORS[sub?.plan] || PLAN_COLORS.free}`}>
-              {PLAN_LABELS[sub?.plan] || 'Free'}
-            </span>
-          </div>
+        {/* Plan cards grid */}
+        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          {PLANS.map(plan => {
+            const isCurrent = sub?.plan === plan.key
+            const isComingSoon = plan.comingSoon
 
-          <div>
-            <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-              <span>Reportes usados</span>
-              <span>{sub?.reports_used} / {sub?.reports_limit}</span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            return (
               <div
-                className={`h-full rounded-full transition-all ${
-                  pct >= 100 ? 'bg-red-400' : pct >= 70 ? 'bg-amber-400' : 'bg-teal-500'
-                }`}
-                style={{ width: `${Math.min(pct, 100)}%` }}
-              />
-            </div>
-          </div>
+                key={plan.key}
+                style={{
+                  background: 'var(--surface)',
+                  border: isCurrent
+                    ? `2px solid var(--blue)`
+                    : isComingSoon
+                      ? `2px solid var(--orange)`
+                      : `1px solid var(--border)`,
+                  borderRadius: 'var(--radius-card)',
+                  padding: '1.25rem',
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                }}
+              >
+                {/* Badge */}
+                {isCurrent && (
+                  <span className="pill" style={{ position: 'absolute', top: '0.75rem', right: '0.75rem' }}>
+                    Tu plan actual
+                  </span>
+                )}
+                {isComingSoon && (
+                  <span className="pill pill-orange" style={{ position: 'absolute', top: '0.75rem', right: '0.75rem' }}>
+                    Próximamente
+                  </span>
+                )}
 
-          {sub?.plan === 'starter' && (
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>Consultas al analista</span>
-              <span>{sub?.consultations_used} / {sub?.consultations_limit}</span>
-            </div>
-          )}
+                {/* Name & price */}
+                <div>
+                  <p style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '1rem' }}>{plan.name}</p>
+                  <p style={{ marginTop: 4 }}>
+                    <span style={{ color: plan.key === 'pro' ? 'var(--orange-dark)' : 'var(--blue-dark)', fontWeight: 700, fontSize: '1.25rem' }}>
+                      {plan.price}
+                    </span>
+                    {plan.period && (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{plan.period}</span>
+                    )}
+                  </p>
+                </div>
 
-          {sub?.current_period_end && (
-            <p className="text-xs text-gray-400">
-              Próxima renovación: {new Date(sub.current_period_end).toLocaleDateString('es-AR')}
-            </p>
-          )}
+                {/* Features */}
+                <ul className="space-y-1.5" style={{ flex: 1 }}>
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-start gap-2" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <div style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: plan.key === 'pro' ? 'var(--orange)' : 'var(--blue)',
+                        flexShrink: 0,
+                        marginTop: 5,
+                      }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Button */}
+                {!isCurrent && !isComingSoon && plan.key === 'starter' && (
+                  <button
+                    onClick={handleCheckout}
+                    disabled={checkoutLoading || !sub?.approved}
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                  >
+                    {checkoutLoading ? 'Redirigiendo...' : 'Suscribirme'}
+                  </button>
+                )}
+                {isCurrent && plan.key !== 'free' && (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', textAlign: 'center' }}>
+                    Plan activo
+                  </p>
+                )}
+                {isComingSoon && (
+                  <button disabled className="btn" style={{ width: '100%', justifyContent: 'center' }}>
+                    Próximamente
+                  </button>
+                )}
+              </div>
+            )
+          })}
         </div>
 
-        {sub?.plan === 'free' && (
-          <div className="bg-white rounded-xl border border-teal-200 p-6 space-y-4">
+        {/* Usage summary */}
+        <div className="card mb-4">
+          <h2 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '1rem' }}>
+            Uso del mes
+          </h2>
+          <div className="space-y-3">
             <div>
-              <p className="text-sm font-medium text-gray-800">Plan Starter</p>
-              <p className="text-2xl font-bold text-teal-600 mt-1">
-                $17.500 ARS<span className="text-sm font-normal text-gray-400">/mes</span>
-              </p>
-              <ul className="mt-3 space-y-2">
-                {[
-                  '10 reportes por mes',
-                  'PDF + PPTX',
-                  'Perfil de empresa personalizado',
-                  '3 consultas mensuales al analista',
-                  'Renovación automática mensual',
-                ].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
-                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
+              <div className="flex justify-between mb-1">
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Reportes</span>
+                <span style={{ color: 'var(--blue-dark)', fontSize: '0.8rem', fontWeight: 600 }}>
+                  {sub?.reports_used}/{sub?.reports_limit}
+                </span>
+              </div>
+              <div className="progress-track">
+                <div className="progress-fill-blue" style={{ width: `${reportsPct}%` }} />
+              </div>
             </div>
+            {sub?.consultations_limit > 0 && (
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Consultas al analista</span>
+                  <span style={{ color: 'var(--orange-dark)', fontSize: '0.8rem', fontWeight: 600 }}>
+                    {sub?.consultations_used || 0}/{sub?.consultations_limit}
+                  </span>
+                </div>
+                <div className="progress-track">
+                  <div className="progress-fill-orange" style={{ width: `${consultPct}%` }} />
+                </div>
+              </div>
+            )}
+            {renewalDate && (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 4 }}>
+                Próxima renovación: {renewalDate}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Gestión MP */}
+        {sub?.plan !== 'free' && (
+          <div className="card">
+            <h2 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+              Gestión de suscripción
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+              Administrá tu suscripción directamente desde MercadoPago.
+            </p>
             <button
               onClick={handleCheckout}
-              disabled={checkoutLoading || !sub?.approved}
-              className="w-full py-2.5 rounded-lg bg-teal-600 text-white font-medium text-sm
-                hover:bg-teal-700 transition disabled:bg-gray-200 disabled:text-gray-400
-                disabled:cursor-not-allowed"
+              disabled={checkoutLoading}
+              className="btn btn-outline"
             >
-              {checkoutLoading ? 'Redirigiendo a MercadoPago...' : 'Suscribirme ahora'}
+              Gestionar en MercadoPago
             </button>
           </div>
         )}
-
-        {sub?.plan !== 'free' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-xs text-gray-500">
-              Para cancelar o modificar tu suscripción contactanos a{' '}
-              <span className="text-teal-600">soporte@reportgen.app</span>
-            </p>
-          </div>
-        )}
-
       </div>
-    </div>
+    </PageLayout>
   )
 }

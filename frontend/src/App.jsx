@@ -1,15 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { useState, useEffect } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
 import Subscription from './pages/Subscription'
+import Consultations from './pages/Consultations'
+import AboutPage from './pages/AboutPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminConsultations from './pages/admin/AdminConsultations'
 import AdminReports from './pages/admin/AdminReports'
-import Consultations from './pages/Consultations'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
@@ -42,20 +44,15 @@ function AdminRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={
-        <PublicRoute><Login /></PublicRoute>
-      } />
-      <Route path="/" element={
-        <ProtectedRoute><Home /></ProtectedRoute>
-      } />
-      <Route path="/profile" element={
-        <ProtectedRoute><Profile /></ProtectedRoute>
-      } />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="/subscription/success" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="/subscription/cancel" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="/subscription/pending" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="/consultations" element={<ProtectedRoute><Consultations /></ProtectedRoute>} />
+      <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       <Route path="/admin/consultations" element={<AdminRoute><AdminConsultations /></AdminRoute>} />
@@ -67,10 +64,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }

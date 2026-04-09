@@ -18,39 +18,101 @@ export default function ReportConfig({ config, onChange }) {
 
   return (
     <div className="space-y-4">
+      {/* Tipo de reporte */}
       <div>
-        <p className="text-xs text-gray-500 mb-2">tipo de reporte</p>
+        <p className="section-label mb-2">Tipo de reporte</p>
         <div className="flex gap-2">
-          {TYPES.map(t => (
-            <button
-              key={t.value}
-              onClick={() => onChange({ ...config, type: t.value })}
-              className={`flex-1 py-2 text-xs rounded-lg border transition
-                ${config.type === t.value
-                  ? 'border-teal-500 bg-teal-50 text-teal-800 font-medium'
-                  : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
-            >
-              {t.label}
-            </button>
-          ))}
+          {TYPES.map(t => {
+            const active = config.type === t.value
+            return (
+              <button
+                key={t.value}
+                onClick={() => onChange({ ...config, type: t.value })}
+                style={{
+                  flex: 1,
+                  padding: '0.4rem 0.5rem',
+                  borderRadius: 'var(--radius-btn)',
+                  border: active
+                    ? '1px solid var(--blue)'
+                    : '1px solid var(--border-strong)',
+                  background: active ? 'var(--blue-light)' : 'var(--surface)',
+                  color: active ? 'var(--blue-darker)' : 'var(--text-secondary)',
+                  fontWeight: active ? 500 : 400,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'var(--transition-fast)',
+                }}
+                onMouseEnter={e => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'var(--orange-light)'
+                    e.currentTarget.style.color = 'var(--orange-dark)'
+                    e.currentTarget.style.borderColor = 'var(--orange)'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'var(--surface)'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                    e.currentTarget.style.borderColor = 'var(--border-strong)'
+                  }
+                }}
+              >
+                {t.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
+      {/* Formato de salida */}
       <div>
-        <p className="text-xs text-gray-500 mb-2">formato de salida</p>
+        <p className="section-label mb-2">Formato de salida</p>
         <div className="flex gap-2">
-          {FORMATS.map(fmt => (
-            <button
-              key={fmt}
-              onClick={() => toggleFormat(fmt)}
-              className={`px-4 py-2 text-xs rounded-lg border transition
-                ${config.formats.includes(fmt)
-                  ? 'border-purple-400 bg-purple-50 text-purple-800 font-medium'
-                  : 'border-gray-200 text-gray-400 hover:border-gray-300'}`}
-            >
-              {fmt.toUpperCase()}
-            </button>
-          ))}
+          {FORMATS.map(fmt => {
+            const active = config.formats.includes(fmt)
+            return (
+              <button
+                key={fmt}
+                onClick={() => toggleFormat(fmt)}
+                style={{
+                  padding: '0.4rem 1rem',
+                  borderRadius: 'var(--radius-btn)',
+                  border: active
+                    ? '1.5px solid var(--orange)'
+                    : '1px solid var(--border-strong)',
+                  background: active ? 'rgba(254,120,8,0.10)' : 'var(--surface)',
+                  color: active ? 'var(--orange-dark)' : 'var(--text-secondary)',
+                  fontWeight: active ? 600 : 400,
+                  fontSize: '0.8rem',
+                  fontFamily: 'monospace',
+                  cursor: 'pointer',
+                  transition: 'var(--transition-fast)',
+                }}
+                onMouseEnter={e => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'var(--orange-light)'
+                    e.currentTarget.style.color = 'var(--orange-dark)'
+                    e.currentTarget.style.borderColor = 'var(--orange)'
+                  } else {
+                    e.currentTarget.style.background = 'var(--orange)'
+                    e.currentTarget.style.color = '#fff'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'var(--surface)'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                    e.currentTarget.style.borderColor = 'var(--border-strong)'
+                  } else {
+                    e.currentTarget.style.background = 'rgba(254,120,8,0.10)'
+                    e.currentTarget.style.color = 'var(--orange-dark)'
+                  }
+                }}
+              >
+                {fmt.toUpperCase()}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

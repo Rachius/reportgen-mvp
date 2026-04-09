@@ -6,6 +6,13 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+const cardStyle = {
+  background: '#162030',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 5,
+  overflow: 'hidden',
+}
+
 function ConsultationCard({ c, onAnswered }) {
   const [expanded, setExpanded] = useState(false)
   const [responding, setResponding] = useState(false)
@@ -15,8 +22,7 @@ function ConsultationCard({ c, onAnswered }) {
 
   const handleSend = async () => {
     if (!response.trim()) return
-    setSending(true)
-    setError(null)
+    setSending(true); setError(null)
     try {
       await answerConsultation(c.id, response)
       onAnswered(c.id)
@@ -27,80 +33,104 @@ function ConsultationCard({ c, onAnswered }) {
     }
   }
 
+  const isPending = c.status === 'pending'
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div style={cardStyle}>
       <div
-        className="px-5 py-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded(v => !v)}
+        style={{ padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', cursor: 'pointer' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">{c.subject}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{c.user_email} · {formatDate(c.created_at)}</p>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ color: '#E8F0F8', fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {c.subject}
+          </p>
+          <p style={{ color: '#4A6078', fontSize: '0.72rem', marginTop: 2 }}>
+            {c.user_email} · {formatDate(c.created_at)}
+          </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
-            {c.status === 'pending' ? 'Pendiente' : 'Respondida'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 999, fontSize: '0.7rem', fontWeight: 600,
+            background: isPending ? 'rgba(251,191,36,0.15)' : 'rgba(16,185,129,0.15)',
+            color: isPending ? '#FCD34D' : '#6EE7B7',
+          }}>
+            {isPending ? 'Pendiente' : 'Respondida'}
           </span>
-          <svg className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <span style={{ color: '#4A6078', transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', display: 'inline-block' }}>▾</span>
         </div>
       </div>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-4">
+        <div style={{ padding: '0.875rem 1.25rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Mensaje</p>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.message}</p>
+            <p style={{ color: '#4A6078', fontWeight: 600, fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+              Mensaje
+            </p>
+            <p style={{ color: '#7A9AB8', fontSize: '0.8rem', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{c.message}</p>
           </div>
 
           {c.admin_response && (
-            <div className="bg-teal-50 rounded-lg p-4">
-              <p className="text-xs font-semibold text-teal-600 uppercase mb-1">Respuesta</p>
-              <p className="text-sm text-teal-800 whitespace-pre-wrap">{c.admin_response}</p>
+            <div style={{ background: 'rgba(78,199,245,0.08)', border: '1px solid rgba(78,199,245,0.2)', borderRadius: 3, padding: '0.75rem' }}>
+              <p style={{ color: '#4EC7F5', fontWeight: 600, fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Respuesta</p>
+              <p style={{ color: '#7A9AB8', fontSize: '0.8rem', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{c.admin_response}</p>
               {c.answered_at && (
-                <p className="text-xs text-teal-500 mt-2">{formatDate(c.answered_at)}</p>
+                <p style={{ color: '#4A6078', fontSize: '0.7rem', marginTop: 6 }}>{formatDate(c.answered_at)}</p>
               )}
             </div>
           )}
 
-          {c.status === 'pending' && (
-            <div className="space-y-3">
-              {!responding ? (
-                <button
-                  onClick={() => setResponding(true)}
-                  className="px-4 py-2 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-                >
-                  Responder
-                </button>
-              ) : (
-                <div className="space-y-3">
-                  <textarea
-                    value={response}
-                    onChange={e => setResponse(e.target.value)}
-                    rows={4}
-                    placeholder="Escribí tu respuesta..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                  />
-                  {error && <p className="text-xs text-red-600">{error}</p>}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSend}
-                      disabled={sending || !response.trim()}
-                      className="px-4 py-2 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors"
-                    >
-                      {sending ? 'Enviando...' : 'Enviar respuesta'}
-                    </button>
-                    <button
-                      onClick={() => { setResponding(false); setResponse('') }}
-                      className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
+          {isPending && (
+            !responding ? (
+              <button
+                onClick={() => setResponding(true)}
+                style={{ padding: '0.4rem 1rem', borderRadius: 3, border: '1.5px solid #FE7808', background: 'rgba(78,199,245,0.10)', color: '#FE7808', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 500, alignSelf: 'flex-start' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#FE7808'; e.currentTarget.style.color = '#fff' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(78,199,245,0.10)'; e.currentTarget.style.color = '#FE7808' }}
+              >
+                Responder
+              </button>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <textarea
+                  value={response}
+                  onChange={e => setResponse(e.target.value)}
+                  rows={4}
+                  placeholder="Escribí tu respuesta..."
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: 3,
+                    border: '1px solid rgba(255,255,255,0.14)',
+                    background: '#1D2A3A',
+                    color: '#E8F0F8',
+                    fontSize: '0.8rem',
+                    resize: 'none',
+                    outline: 'none',
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = '#4EC7F5'}
+                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'}
+                />
+                {error && <p style={{ color: '#FCA5A5', fontSize: '0.75rem' }}>{error}</p>}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={handleSend}
+                    disabled={sending || !response.trim()}
+                    style={{ padding: '0.4rem 1rem', borderRadius: 3, border: '1.5px solid #FE7808', background: sending ? 'rgba(254,120,8,0.2)' : '#FE7808', color: '#fff', fontSize: '0.8rem', cursor: sending ? 'not-allowed' : 'pointer', fontWeight: 500 }}
+                  >
+                    {sending ? 'Enviando...' : 'Enviar respuesta'}
+                  </button>
+                  <button
+                    onClick={() => { setResponding(false); setResponse('') }}
+                    style={{ padding: '0.4rem 1rem', borderRadius: 3, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#7A9AB8', fontSize: '0.8rem', cursor: 'pointer' }}
+                  >
+                    Cancelar
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )
           )}
         </div>
       )}
@@ -114,68 +144,79 @@ export default function AdminConsultations() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const load = () => {
-    setLoading(true)
-    setError(null)
-    getConsultations()
-      .then(setConsultations)
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    setLoading(true); setError(null)
+    getConsultations().then(setConsultations).catch(e => setError(e.message)).finally(() => setLoading(false))
+  }, [])
 
   const handleAnswered = (id) => {
-    setConsultations(prev =>
-      prev.map(c => c.id === id ? { ...c, status: 'answered' } : c)
-    )
+    setConsultations(prev => prev.map(c => c.id === id ? { ...c, status: 'answered' } : c))
   }
 
   const filtered = consultations.filter(c => c.status === tab)
+  const pendingCount = consultations.filter(c => c.status === 'pending').length
+  const answeredCount = consultations.filter(c => c.status === 'answered').length
+
+  const tabBtnStyle = (active) => ({
+    padding: '0.4rem 1rem',
+    borderRadius: 3,
+    border: active ? '1px solid #FE7808' : '1px solid rgba(78,199,245,0.25)',
+    background: active ? 'rgba(254,120,8,0.15)' : 'rgba(78,199,245,0.07)',
+    color: active ? '#FFA040' : '#4EC7F5',
+    fontSize: '0.8rem',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  })
 
   return (
     <AdminLayout>
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6">
+      <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem' }}>
         {[
-          { key: 'pending', label: 'Pendientes' },
-          { key: 'answered', label: 'Respondidas' },
-        ].map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          >
+          { key: 'pending', label: 'Pendientes', count: pendingCount },
+          { key: 'answered', label: 'Respondidas', count: answeredCount },
+        ].map(({ key, label, count }) => (
+          <button key={key} onClick={() => setTab(key)} style={tabBtnStyle(tab === key)}>
             {label}
-            <span className="ml-2 text-xs text-gray-400">
-              ({consultations.filter(c => c.status === key).length})
+            <span style={{
+              minWidth: 18, height: 18, background: tab === key ? '#FE7808' : 'rgba(78,199,245,0.2)',
+              color: tab === key ? '#fff' : '#4EC7F5',
+              borderRadius: 999, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700, padding: '0 4px',
+            }}>
+              {count}
             </span>
           </button>
         ))}
       </div>
 
       {loading && (
-        <div className="flex items-center justify-center h-48">
-          <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 160 }}>
+          <div style={{ width: 28, height: 28, border: '3px solid #1D2A3A', borderTop: '3px solid #4EC7F5', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         </div>
       )}
-
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 5, padding: '0.75rem 1rem', color: '#FCA5A5', fontSize: '0.8rem' }}>
           {error}
         </div>
       )}
-
       {!loading && !error && (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filtered.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-12">Sin consultas {tab === 'pending' ? 'pendientes' : 'respondidas'}</p>
+            <p style={{ color: '#4A6078', fontSize: '0.8rem', textAlign: 'center', padding: '3rem 0' }}>
+              Sin consultas {tab === 'pending' ? 'pendientes' : 'respondidas'}
+            </p>
           )}
           {filtered.map(c => (
             <ConsultationCard key={c.id} c={c} onAnswered={handleAnswered} />
           ))}
         </div>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </AdminLayout>
   )
 }
