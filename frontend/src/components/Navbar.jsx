@@ -34,7 +34,7 @@ export default function Navbar() {
             flexShrink: 0,
           }} />
           <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>
-            Reporti
+            <img src="/logo-reporti.png" alt="Reporti" style={{ height: '32px', width: 'auto' }} />
           </span>
         </button>
 

@@ -43,10 +43,10 @@ export default function TabsNav() {
   return (
     <div style={{
       background: 'var(--surface)',
-      borderBottom: '1px solid var(--border)',
+      borderBottom: '1px solid var(--border-strong)',
     }}>
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center gap-1.5 overflow-x-auto py-2" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex items-end gap-1 overflow-x-auto pt-2" style={{ scrollbarWidth: 'none' }}>
           {tabs.map(tab => {
             const active = isActive(tab)
             return (

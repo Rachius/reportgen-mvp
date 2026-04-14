@@ -264,36 +264,49 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.4rem 1rem;
-  border-radius: var(--radius-btn);
-  font-size: 0.875rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 5px 5px 0 0;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition-fast);
   text-decoration: none;
-  border: 1px solid rgba(78, 199, 245, 0.25);
-  background: rgba(78, 199, 245, 0.07);
-  color: var(--blue-dark);
+  border: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  margin-bottom: -1px;
+  position: relative;
 }
 
 .tab:hover:not(.tab-active) {
-  background: rgba(78, 199, 245, 0.12);
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
 .tab-active {
-  background: rgba(254, 120, 8, 0.10);
-  color: #C05000;
-  border-color: var(--orange);
+  background: var(--surface);
+  color: var(--orange-dark);
+  border-color: var(--border-strong);
+  border-bottom-color: var(--surface);
+  font-weight: 600;
 }
 
 .dark .tab {
-  color: var(--blue);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.dark .tab:hover:not(.tab-active) {
+  background: var(--surface-3);
+  color: var(--text-primary);
 }
 
 .dark .tab-active {
-  background: rgba(254, 120, 8, 0.15);
+  background: var(--surface);
   color: #FFA040;
-  border-color: var(--orange);
+  border-bottom-color: var(--surface);
 }
 
 /* --- Section label --- */
