@@ -6,6 +6,7 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
+  const isDark = theme === 'dark'
 
   const handleLogout = async () => {
     await logout()
@@ -14,60 +15,67 @@ export default function Navbar() {
 
   return (
     <nav style={{
-      background: 'var(--surface)',
+      background: 'var(--nav-bg)',
+      backdropFilter: 'blur(8px)',
       borderBottom: '1px solid var(--border)',
       position: 'sticky',
       top: 0,
       zIndex: 50,
     }}>
       <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
+
         {/* Logo */}
         <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/home')}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
-          <div style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: 'var(--blue)',
-            flexShrink: 0,
-          }} />
-          <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>
-            <img src="/logo-reporti.png" alt="Reporti" style={{ height: '32px', width: 'auto' }} />
-          </span>
+          <img src="/logo-reporti.png" alt="R" style={{ height: '32px', width: 'auto' }} />
+          <span className="grad-text" style={{ fontWeight: 700, fontSize: '1rem' }}>Reporti</span>
         </button>
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 'var(--radius-btn)',
-              border: '1px solid var(--border-strong)',
-              background: 'var(--surface-2)',
-              color: 'var(--text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              transition: 'var(--transition-fast)',
-            }}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
+
+          {/* Theme switch: ☀️ [track] 🌙 */}
+          <div className="flex items-center gap-1.5">
+            <span style={{ fontSize: '0.8rem', lineHeight: 1 }}>☀️</span>
+            <button
+              onClick={toggleTheme}
+              title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              style={{
+                width: 28,
+                height: 16,
+                borderRadius: 999,
+                background: isDark ? 'var(--blue)' : 'var(--border-strong)',
+                position: 'relative',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 0.2s ease',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{
+                position: 'absolute',
+                top: 2,
+                left: isDark ? 14 : 2,
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              }} />
+            </button>
+            <span style={{ fontSize: '0.8rem', lineHeight: 1 }}>🌙</span>
+          </div>
 
           {/* Divider */}
-          <span style={{ color: 'var(--border-strong)', fontSize: '1rem' }}>|</span>
+          <span style={{ width: 1, height: 18, background: 'var(--border-strong)', display: 'block' }} />
 
           {/* Email */}
           <span style={{
-            color: 'var(--text-muted)',
+            color: 'var(--text3)',
             fontSize: '0.75rem',
             maxWidth: 160,
             overflow: 'hidden',
@@ -77,11 +85,43 @@ export default function Navbar() {
             {user?.email}
           </span>
 
+          {/* ? button */}
+          <button
+            onClick={() => navigate('/about')}
+            title="¿Qué es Reporti?"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              border: '1px solid var(--border-strong)',
+              background: 'var(--bg3)',
+              color: 'var(--text2)',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'var(--transition-fast)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = 'var(--orange)'
+              e.currentTarget.style.color = 'var(--orange-dark)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'var(--border-strong)'
+              e.currentTarget.style.color = 'var(--text2)'
+            }}
+          >
+            ?
+          </button>
+
           {/* Logout */}
           <button
             onClick={handleLogout}
             className="btn btn-outline"
-            style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem' }}
+            style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', minHeight: 30 }}
           >
             Salir
           </button>

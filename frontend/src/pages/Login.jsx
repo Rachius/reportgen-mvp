@@ -1,21 +1,24 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
 
 const ERROR_MESSAGES = {
-  'auth/user-not-found': 'No existe una cuenta con ese email.',
-  'auth/wrong-password': 'Contraseña incorrecta.',
-  'auth/email-already-in-use': 'Ese email ya está registrado.',
-  'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
-  'auth/invalid-email': 'El email no es válido.',
-  'auth/invalid-credential': 'Email o contraseña incorrectos.',
-  'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de completar.',
-  'auth/too-many-requests': 'Demasiados intentos. Esperá unos minutos e intentá de nuevo.',
+  'auth/user-not-found':        'No existe una cuenta con ese email.',
+  'auth/wrong-password':        'Contraseña incorrecta.',
+  'auth/email-already-in-use':  'Ese email ya está registrado.',
+  'auth/weak-password':         'La contraseña debe tener al menos 6 caracteres.',
+  'auth/invalid-email':         'El email no es válido.',
+  'auth/invalid-credential':    'Email o contraseña incorrectos.',
+  'auth/popup-closed-by-user':  'Cerraste la ventana de Google antes de completar.',
+  'auth/too-many-requests':     'Demasiados intentos. Esperá unos minutos e intentá de nuevo.',
 }
 
 export default function Login() {
   const { login, register, loginWithGoogle, resetPassword } = useAuth()
   const navigate = useNavigate()
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
@@ -34,7 +37,7 @@ export default function Login() {
     try {
       if (mode === 'login') {
         await login(email, password)
-        navigate('/')
+        navigate('/home')
       } else if (mode === 'register') {
         await register(email, password)
         setInfo('Cuenta creada. Te enviamos un email de verificación — revisá tu casilla antes de continuar.')
@@ -52,7 +55,7 @@ export default function Login() {
     setGoogleLoading(true)
     try {
       await loginWithGoogle()
-      navigate('/')
+      navigate('/home')
     } catch (err) {
       setError(ERROR_MESSAGES[err.code] || 'Error al iniciar sesión con Google.')
     } finally {
@@ -79,8 +82,9 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--surface-2)',
+      background: 'var(--bg)',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '1rem',
@@ -88,27 +92,40 @@ export default function Login() {
       <div style={{ width: '100%', maxWidth: 360 }}>
 
         {/* Logo */}
-        <div className="flex items-center gap-2 mb-8 justify-center">
-          <div style={{
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            background: 'var(--blue)',
-          }} />
-          <span style={{
-            color: 'var(--text-primary)',
-            fontWeight: 700,
-            fontSize: '1.25rem',
-          }}>
-            Reporti
-          </span>
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <img src="/logo-reporti.png" alt="R" style={{ height: '32px', width: 'auto' }} />
+            <span className="grad-text" style={{ fontWeight: 700, fontSize: '1.1rem' }}>Reporti</span>
+          </button>
+          {/* Theme toggle */}
+          <div className="flex items-center gap-1">
+            <span style={{ fontSize: '0.75rem' }}>☀️</span>
+            <button onClick={toggleTheme} style={{
+              width: 28, height: 16, borderRadius: 999,
+              background: isDark ? 'var(--blue)' : 'var(--border-strong)',
+              position: 'relative', border: 'none', cursor: 'pointer',
+              transition: 'background 0.2s',
+            }}>
+              <span style={{
+                position: 'absolute', top: 2,
+                left: isDark ? 14 : 2, width: 12, height: 12,
+                borderRadius: '50%', background: '#fff',
+                transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              }} />
+            </button>
+            <span style={{ fontSize: '0.75rem' }}>🌙</span>
+          </div>
         </div>
 
         <div className="card space-y-4">
-          <h1 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>
-            {mode === 'login' && 'Iniciá sesión'}
+          <h1 style={{ color: 'var(--text)', fontWeight: 600, fontSize: '1rem' }}>
+            {mode === 'login'    && 'Iniciá sesión'}
             {mode === 'register' && 'Creá tu cuenta'}
-            {mode === 'reset' && 'Recuperar contraseña'}
+            {mode === 'reset'    && 'Recuperar contraseña'}
           </h1>
 
           {/* Google */}
@@ -132,7 +149,7 @@ export default function Login() {
           {mode !== 'reset' && (
             <div className="flex items-center gap-3">
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>o con email</span>
+              <span style={{ color: 'var(--text3)', fontSize: '0.72rem' }}>o con email</span>
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
           )}
@@ -140,7 +157,7 @@ export default function Login() {
           {/* Fields */}
           <div className="space-y-3">
             <div>
-              <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+              <label style={{ color: 'var(--text3)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
                 Email
               </label>
               <input
@@ -154,7 +171,7 @@ export default function Login() {
             </div>
             {mode !== 'reset' && (
               <div>
-                <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+                <label style={{ color: 'var(--text3)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
                   Contraseña
                 </label>
                 <input
@@ -172,24 +189,18 @@ export default function Login() {
           {/* Messages */}
           {error && (
             <p style={{
-              color: '#DC2626',
-              fontSize: '0.75rem',
-              background: '#FEF2F2',
-              border: '1px solid rgba(239,68,68,0.2)',
-              borderRadius: 'var(--radius-btn)',
-              padding: '0.5rem 0.75rem',
+              color: '#DC2626', fontSize: '0.75rem',
+              background: '#FEF2F2', border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 'var(--radius-btn)', padding: '0.5rem 0.75rem',
             }}>
               {error}
             </p>
           )}
           {info && (
             <p style={{
-              color: 'var(--blue-darker)',
-              fontSize: '0.75rem',
-              background: 'var(--blue-light)',
-              border: '1px solid var(--blue)',
-              borderRadius: 'var(--radius-btn)',
-              padding: '0.5rem 0.75rem',
+              color: 'var(--blue-darker)', fontSize: '0.75rem',
+              background: 'var(--blue-light)', border: '1px solid var(--blue)',
+              borderRadius: 'var(--radius-btn)', padding: '0.5rem 0.75rem',
             }}>
               {info}
             </p>
@@ -207,10 +218,8 @@ export default function Login() {
                 {loading ? 'Enviando...' : 'Enviar link de recuperación'}
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.75rem' }}>
-                <button
-                  onClick={() => switchMode('login')}
-                  style={{ color: 'var(--blue-dark)', background: 'none', border: 'none', cursor: 'pointer' }}
-                >
+                <button onClick={() => switchMode('login')}
+                  style={{ color: 'var(--blue-dark)', background: 'none', border: 'none', cursor: 'pointer' }}>
                   Volver al login
                 </button>
               </p>
@@ -230,16 +239,16 @@ export default function Login() {
                 <p style={{ textAlign: 'center', fontSize: '0.75rem' }}>
                   <button
                     onClick={() => switchMode('reset')}
-                    style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', transition: 'var(--transition-fast)' }}
+                    style={{ color: 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
                     onMouseEnter={e => e.target.style.color = 'var(--blue-dark)'}
-                    onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--text3)'}
                   >
                     ¿Olvidaste tu contraseña?
                   </button>
                 </p>
               )}
 
-              <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text3)' }}>
                 {mode === 'login' ? '¿No tenés cuenta?' : '¿Ya tenés cuenta?'}{' '}
                 <button
                   onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}

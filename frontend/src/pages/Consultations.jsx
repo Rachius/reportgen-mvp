@@ -59,31 +59,26 @@ export default function Consultations() {
   return (
     <PageLayout>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
+
+        {/* Header */}
         <div className="mb-6">
-          <h1 style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '1.25rem' }}>
+          <h1 className="grad-text" style={{ fontWeight: 700, fontSize: '1.25rem' }}>
             Consultas al analista
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: 4 }}>
+          <p style={{ color: 'var(--text2)', fontSize: '0.875rem', marginTop: 4 }}>
             Enviá tus preguntas y recibí respuestas personalizadas.
           </p>
         </div>
 
         {loading && (
           <div className="flex items-center justify-center h-32">
-            <div style={{
-              width: 28,
-              height: 28,
-              border: '3px solid var(--blue-light)',
-              borderTop: '3px solid var(--blue)',
-              borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
-            }} />
+            <div className="spinner" />
           </div>
         )}
 
         {!loading && subscription && (
           <>
-            {/* Disponibilidad */}
+            {/* Estado banner */}
             <div style={{
               background: canSend ? 'var(--blue-light)' : 'var(--orange-light)',
               border: `1px solid ${canSend ? 'var(--blue)' : 'var(--orange)'}`,
@@ -91,19 +86,15 @@ export default function Consultations() {
               padding: '0.875rem 1rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
+              gap: '0.875rem',
               marginBottom: '1.5rem',
             }}>
+              {/* Badge count */}
               <div style={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
+                width: 42, height: 42, borderRadius: '50%',
                 background: canSend ? 'rgba(78,199,245,0.2)' : 'rgba(254,120,8,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '1rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '1rem',
                 color: canSend ? 'var(--blue-darker)' : 'var(--orange-dark)',
                 flexShrink: 0,
               }}>
@@ -112,7 +103,7 @@ export default function Consultations() {
               <div>
                 <p style={{ fontWeight: 600, fontSize: '0.875rem', color: canSend ? 'var(--blue-darker)' : 'var(--orange-dark)' }}>
                   {canSend
-                    ? `Tenés ${remaining} consulta${remaining !== 1 ? 's' : ''} disponible${remaining !== 1 ? 's' : ''} este mes`
+                    ? `${remaining} consulta${remaining !== 1 ? 's' : ''} disponible${remaining !== 1 ? 's' : ''} este mes`
                     : subscription.plan === 'free'
                       ? 'Necesitás el plan Starter o Pro para enviar consultas'
                       : 'Agotaste tus consultas disponibles este mes'}
@@ -124,13 +115,13 @@ export default function Consultations() {
             </div>
 
             {/* Formulario */}
-            <div className="card mb-6">
-              <h2 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '1rem' }}>
+            <div className="card mb-5">
+              <h2 style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '1rem' }}>
                 Nueva consulta
               </h2>
               <form onSubmit={handleSend} className="space-y-4">
                 <div>
-                  <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+                  <label style={{ color: 'var(--text3)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
                     Asunto
                   </label>
                   <input
@@ -143,22 +134,33 @@ export default function Consultations() {
                   />
                 </div>
                 <div>
-                  <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+                  <label style={{ color: 'var(--text3)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
                     Mensaje
                   </label>
                   <textarea
                     value={message}
                     onChange={e => setMessage(e.target.value)}
                     disabled={!canSend}
-                    rows={4}
+                    rows={5}
                     placeholder="Describí tu consulta con el mayor detalle posible..."
                     className="input"
-                    style={{ resize: 'none' }}
+                    style={{ resize: 'none', minHeight: 120 }}
                   />
                 </div>
 
-                {sendError && <p style={{ color: '#DC2626', fontSize: '0.75rem' }}>{sendError}</p>}
-                {sendSuccess && <p style={{ color: 'var(--blue-dark)', fontSize: '0.75rem' }}>Consulta enviada correctamente.</p>}
+                {!canSend && (
+                  <p style={{ color: 'var(--text3)', fontSize: '0.78rem', fontStyle: 'italic' }}>
+                    Actualizá tu plan para enviar consultas
+                  </p>
+                )}
+                {sendError && (
+                  <p style={{ color: '#DC2626', fontSize: '0.75rem', background: '#FEF2F2', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-btn)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    {sendError}
+                  </p>
+                )}
+                {sendSuccess && (
+                  <p style={{ color: 'var(--blue-dark)', fontSize: '0.75rem' }}>Consulta enviada correctamente.</p>
+                )}
 
                 <button
                   type="submit"
@@ -172,28 +174,33 @@ export default function Consultations() {
 
             {/* Historial */}
             <div>
-              <h2 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+              <h2 style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.75rem' }}>
                 Mis consultas
               </h2>
               {consultations.length === 0 ? (
                 <div className="card" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                  <p style={{ fontSize: '1.75rem', marginBottom: 8 }}>💬</p>
+                  <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.875rem', marginBottom: 4 }}>
                     Todavía no enviaste ninguna consulta
+                  </p>
+                  <p style={{ color: 'var(--text3)', fontSize: '0.8rem' }}>
+                    Tus consultas aparecerán aquí una vez que las envíes.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {consultations.map(c => (
                     <div key={c.id} style={{
-                      background: 'var(--surface)',
+                      background: 'var(--card)',
                       border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-card)',
                       overflow: 'hidden',
+                      boxShadow: 'var(--shadow)',
                     }}>
                       <div style={{ padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
                         <div>
-                          <p style={{ color: 'var(--text-primary)', fontWeight: 500, fontSize: '0.875rem' }}>{c.subject}</p>
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: 2 }}>{formatDate(c.created_at)}</p>
+                          <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.875rem' }}>{c.subject}</p>
+                          <p style={{ color: 'var(--text3)', fontSize: '0.72rem', marginTop: 2 }}>{formatDate(c.created_at)}</p>
                         </div>
                         <span className={`pill ${c.status === 'pending' ? 'pill-amber' : 'pill-green'}`} style={{ flexShrink: 0 }}>
                           {c.status === 'pending' ? 'Pendiente' : 'Respondida'}
@@ -202,7 +209,7 @@ export default function Consultations() {
                       <div style={{ padding: '0.75rem 1.25rem 1rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <div>
                           <p className="section-label mb-1">Tu mensaje</p>
-                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{c.message}</p>
+                          <p style={{ color: 'var(--text2)', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{c.message}</p>
                         </div>
                         {c.admin_response && (
                           <div style={{
@@ -214,9 +221,9 @@ export default function Consultations() {
                             <p style={{ color: 'var(--blue-darker)', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
                               Respuesta del analista
                             </p>
-                            <p style={{ color: 'var(--text-primary)', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{c.admin_response}</p>
+                            <p style={{ color: 'var(--text)', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{c.admin_response}</p>
                             {c.answered_at && (
-                              <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 6 }}>{formatDate(c.answered_at)}</p>
+                              <p style={{ color: 'var(--text3)', fontSize: '0.7rem', marginTop: 6 }}>{formatDate(c.answered_at)}</p>
                             )}
                           </div>
                         )}
@@ -229,8 +236,6 @@ export default function Consultations() {
           </>
         )}
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </PageLayout>
   )
 }

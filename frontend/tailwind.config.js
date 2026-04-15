@@ -3,6 +3,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,jsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -19,8 +20,15 @@ export default {
         },
       },
       borderRadius: {
-        card: '5px',
-        btn:  '3px',
+        card:  '10px',
+        btn:   '4px',
+        input: '4px',
+      },
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
+      backgroundImage: {
+        'grad': 'linear-gradient(135deg, #4EC7F5, #FE7808)',
       },
     },
   },

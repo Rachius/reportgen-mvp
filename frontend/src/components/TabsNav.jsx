@@ -10,25 +10,20 @@ export default function TabsNav() {
   const { user } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
   const [answeredCount, setAnsweredCount] = useState(0)
-  const [plan, setPlan] = useState(null)
 
   useEffect(() => {
     if (!user) return
     user.getIdTokenResult().then(r => setIsAdmin(!!r.claims.admin)).catch(() => {})
-    getSubscription().then(sub => {
-      setPlan(sub.plan)
-    }).catch(() => {})
     getUserConsultations().then(list => {
       setAnsweredCount(list.filter(c => c.status === 'answered').length)
     }).catch(() => {})
   }, [user])
 
   const tabs = [
-    { to: '/', label: 'Inicio', exact: true },
-    { to: '/subscription', label: 'Mi plan', exact: false },
+    { to: '/home',          label: 'Inicio',    exact: true },
+    { to: '/subscription',  label: 'Mi plan',   exact: false },
     { to: '/consultations', label: 'Consultas', exact: false, badge: answeredCount > 0 ? answeredCount : null },
-    { to: '/profile', label: 'Perfil', exact: false },
-    { to: '/about', label: '¿Qué es Reporti?', exact: false },
+    { to: '/profile',       label: 'Perfil',    exact: false },
   ]
 
   if (isAdmin) {
@@ -42,11 +37,14 @@ export default function TabsNav() {
 
   return (
     <div style={{
-      background: 'var(--surface)',
+      background: 'var(--bg2)',
       borderBottom: '1px solid var(--border-strong)',
     }}>
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-end gap-1 overflow-x-auto pt-2" style={{ scrollbarWidth: 'none' }}>
+        <div
+          className="flex items-end gap-1 overflow-x-auto pt-2"
+          style={{ scrollbarWidth: 'none' }}
+        >
           {tabs.map(tab => {
             const active = isActive(tab)
             return (
@@ -55,10 +53,8 @@ export default function TabsNav() {
                 onClick={() => navigate(tab.to)}
                 className={`tab ${active ? 'tab-active' : ''}`}
                 style={{
-                  fontSize: tab.small ? '0.72rem' : '0.8rem',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  position: 'relative',
+                  fontSize: tab.small ? '0.72rem' : undefined,
+                  opacity: tab.small ? 0.8 : 1,
                 }}
               >
                 {tab.label}
@@ -75,7 +71,7 @@ export default function TabsNav() {
                     color: '#fff',
                     fontSize: '0.6rem',
                     fontWeight: 700,
-                    marginLeft: 4,
+                    marginLeft: 2,
                   }}>
                     {tab.badge}
                   </span>

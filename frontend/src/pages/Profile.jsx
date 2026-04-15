@@ -8,9 +8,7 @@ const INDUSTRIES = [
   'Servicios profesionales', 'Tecnología', 'Salud', 'Construcción',
   'Logística / Transporte', 'Alimentación / Gastronomía', 'Otro',
 ]
-
 const CURRENCIES = ['ARS', 'USD', 'EUR', 'BRL', 'CLP', 'UYU']
-
 const COLUMN_FIELDS = [
   { key: 'amount',   label: 'Monto / Ventas',  placeholder: 'ej: total, monto_neto, importe' },
   { key: 'date',     label: 'Fecha',            placeholder: 'ej: fecha, fecha_venta, date' },
@@ -22,10 +20,25 @@ const COLUMN_FIELDS = [
   { key: 'quantity', label: 'Cantidad',         placeholder: 'ej: cantidad, qty, unidades' },
 ]
 
-function Section({ title, children }) {
+const selectStyle = {
+  width: '100%',
+  padding: '8px 12px',
+  borderRadius: 'var(--radius-input)',
+  border: '1px solid var(--border-strong)',
+  background: 'var(--bg)',
+  color: 'var(--text)',
+  fontSize: '0.875rem',
+  outline: 'none',
+  fontFamily: 'inherit',
+}
+
+function Section({ title, desc, children }) {
   return (
     <div className="card space-y-4">
-      <h2 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>{title}</h2>
+      <div>
+        <h2 style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.9rem' }}>{title}</h2>
+        {desc && <p style={{ color: 'var(--text3)', fontSize: '0.78rem', marginTop: 2 }}>{desc}</p>}
+      </div>
       {children}
     </div>
   )
@@ -34,7 +47,7 @@ function Section({ title, children }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+      <label style={{ color: 'var(--text3)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
         {label}
       </label>
       {children}
@@ -136,28 +149,19 @@ export default function Profile() {
   if (loading) return (
     <PageLayout>
       <div className="flex items-center justify-center h-40">
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Cargando perfil...</p>
+        <div className="spinner" />
       </div>
     </PageLayout>
   )
 
-  const selectStyle = {
-    width: '100%',
-    padding: '0.45rem 0.75rem',
-    borderRadius: 'var(--radius-input)',
-    border: '1px solid var(--border-strong)',
-    background: 'var(--surface)',
-    color: 'var(--text-primary)',
-    fontSize: '0.875rem',
-    outline: 'none',
-  }
-
   return (
     <PageLayout>
       <div style={{ maxWidth: 680, margin: '0 auto' }} className="space-y-5">
+
+        {/* Header */}
         <div>
-          <h1 style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '1.25rem' }}>Perfil de empresa</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: 4 }}>
+          <h1 className="grad-text" style={{ fontWeight: 700, fontSize: '1.25rem' }}>Perfil de empresa</h1>
+          <p style={{ color: 'var(--text2)', fontSize: '0.875rem', marginTop: 4 }}>
             Esta información le da contexto a Reporti para generar análisis más precisos.
           </p>
         </div>
@@ -165,10 +169,8 @@ export default function Profile() {
         {/* Email no verificado */}
         {user && !user.emailVerified && !isGoogleUser && (
           <div style={{
-            background: '#FFFBEB',
-            border: '1px solid #FCD34D',
-            borderRadius: 'var(--radius-card)',
-            padding: '0.875rem 1rem',
+            background: '#FFFBEB', border: '1px solid #FCD34D',
+            borderRadius: 'var(--radius-card)', padding: '0.875rem 1rem',
           }}>
             <p style={{ color: '#92400E', fontWeight: 600, fontSize: '0.8rem' }}>Email no verificado</p>
             <p style={{ color: '#B45309', fontSize: '0.75rem', marginTop: 2 }}>
@@ -179,7 +181,7 @@ export default function Profile() {
             ) : (
               <button
                 onClick={async () => { await resendVerification(); setVerificationSent(true) }}
-                style={{ color: '#92400E', fontSize: '0.75rem', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', marginTop: 6 }}
+                style={{ color: '#92400E', fontSize: '0.75rem', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', marginTop: 6, padding: 0 }}
               >
                 Reenviar email de verificación
               </button>
@@ -221,7 +223,7 @@ export default function Profile() {
               </Field>
             </div>
             <div className="col-span-2">
-              <Field label={<>Contexto adicional para el análisis <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(opcional)</span></>}>
+              <Field label={<>Contexto adicional para el análisis <span style={{ color: 'var(--text3)', fontWeight: 400 }}>(opcional)</span></>}>
                 <textarea value={form.extra_context} onChange={e => set('extra_context', e.target.value)}
                   placeholder="Ej: nuestro año fiscal empieza en julio, los valores están en miles de pesos..."
                   rows={3} className="input" style={{ resize: 'none' }} />
@@ -231,10 +233,10 @@ export default function Profile() {
         </Section>
 
         {/* Mapeo de columnas */}
-        <Section title="Mapeo de columnas">
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: -8 }}>
-            Indicá cómo se llaman las columnas clave en tus archivos para que Reporti las identifique correctamente.
-          </p>
+        <Section
+          title="Mapeo de columnas"
+          desc="Indicá cómo se llaman las columnas clave en tus archivos para que Reporti las identifique correctamente."
+        >
           <div className="grid grid-cols-2 gap-4">
             {COLUMN_FIELDS.map(field => (
               <Field key={field.key} label={field.label}>
@@ -252,21 +254,19 @@ export default function Profile() {
         {/* Cambiar contraseña */}
         {!isGoogleUser && (
           <Section title="Cambiar contraseña">
-            <div className="space-y-3">
-              <Field label="Contraseña actual">
-                <input type="password" value={pwForm.current}
-                  onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))} className="input" />
+            <Field label="Contraseña actual">
+              <input type="password" value={pwForm.current}
+                onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))} className="input" />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Nueva contraseña">
+                <input type="password" value={pwForm.new}
+                  onChange={e => setPwForm(f => ({ ...f, new: e.target.value }))} className="input" />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Nueva contraseña">
-                  <input type="password" value={pwForm.new}
-                    onChange={e => setPwForm(f => ({ ...f, new: e.target.value }))} className="input" />
-                </Field>
-                <Field label="Confirmar contraseña">
-                  <input type="password" value={pwForm.confirm}
-                    onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))} className="input" />
-                </Field>
-              </div>
+              <Field label="Confirmar contraseña">
+                <input type="password" value={pwForm.confirm}
+                  onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))} className="input" />
+              </Field>
             </div>
             {pwError && (
               <p style={{ color: '#DC2626', fontSize: '0.75rem', background: '#FEF2F2', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-btn)', padding: '0.4rem 0.75rem' }}>
@@ -285,31 +285,36 @@ export default function Profile() {
         )}
 
         {/* Guardar */}
-        <div className="flex items-center justify-between">
-          {saved
-            ? <p style={{ color: 'var(--blue-dark)', fontSize: '0.8rem' }}>Perfil guardado correctamente.</p>
-            : <div />
-          }
-          <button onClick={handleSave} disabled={saving} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem' }}>
-            {saving ? 'Guardando...' : 'Guardar cambios'}
-          </button>
-        </div>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="btn btn-grad"
+          style={{ width: '100%', justifyContent: 'center', padding: '0.6rem', marginBottom: 4 }}
+        >
+          {saving ? 'Guardando...' : 'Guardar cambios'}
+        </button>
+        {saved && (
+          <p style={{ color: 'var(--blue-dark)', fontSize: '0.8rem', textAlign: 'center' }}>
+            Perfil guardado correctamente.
+          </p>
+        )}
 
         {/* Zona de peligro */}
         <div style={{
-          background: 'var(--surface)',
+          background: 'var(--card)',
           border: '1px solid rgba(239,68,68,0.25)',
           borderRadius: 'var(--radius-card)',
           padding: '1.25rem',
+          boxShadow: 'var(--shadow)',
         }} className="space-y-4">
           <div>
-            <h2 style={{ color: '#DC2626', fontWeight: 600, fontSize: '0.875rem' }}>Zona de peligro</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 2 }}>
+            <h2 style={{ color: '#DC2626', fontWeight: 600, fontSize: '0.9rem' }}>Zona de peligro</h2>
+            <p style={{ color: 'var(--text3)', fontSize: '0.8rem', marginTop: 2 }}>
               Eliminar tu cuenta es permanente. Se borrarán todos tus datos y reportes.
             </p>
           </div>
           <div>
-            <label style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
+            <label style={{ color: 'var(--text3)', fontSize: '0.72rem', display: 'block', marginBottom: 4 }}>
               {isGoogleUser ? 'Escribí DELETE para confirmar' : 'Ingresá tu contraseña para confirmar'}
             </label>
             <input
