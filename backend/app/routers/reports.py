@@ -62,8 +62,13 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             "pdf_url": result.get('pdf_url', ''),
             "pptx_url": result.get('pptx_url', ''),
         })
+        try:
+    from app.services.subscription_service import increment_report_usage
+    await increment_report_usage(str(file_data.get('user_id', '')))
+    except Exception:
+    pass  # No bloquear la descarga si falla el increment
 
-        jobs[job_id].update(result)
+jobs[job_id].update(result)
 
     except Exception as e:
         jobs[job_id].update({
@@ -99,7 +104,7 @@ async def generate_report(
     profile = await get_profile(user["id"])
     file_data['company_profile'] = profile
 
-    await increment_report_usage(user["id"])
+
     file_data['user_id'] = str(user["id"])
 
     jobs[job_id] = {

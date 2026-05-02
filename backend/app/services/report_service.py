@@ -5,7 +5,8 @@ from pptx.dml.color import RGBColor
 import io
 
 def generate_pdf(analysis: dict, report_type: str = "ventas", profile: dict = None) -> bytes:
-    builder = get_builder(report_type, analysis, profile)
+    BuilderClass = get_builder(report_type)
+builder = BuilderClass(analysis, profile)
     return builder.build_pdf()
 
 def add_logo_to_slide(slide, logo_url: str):
