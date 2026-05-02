@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @page { size: A4; margin: 1.8cm 2cm 2cm 2cm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #1f2937; line-height: 1.6; }
+
+  .header { border-bottom: 2px solid #1D9E75; padding-bottom: 10px; margin-bottom: 20px; }
+  .header-table { width: 100%; }
+  .header-table td { border: none; background: none; padding: 0; vertical-align: bottom; }
+  .logo-text { font-size: 13px; font-weight: bold; color: #1D9E75; }
+  .company-name { font-size: 9px; color: #6b7280; text-align: right; }
+  .report-title { font-size: 18px; font-weight: bold; color: #111827; margin-top: 12px; margin-bottom: 4px; }
+  .report-subtitle { font-size: 9px; color: #6b7280; }
+
+  h2 { font-size: 12px; font-weight: bold; color: #1D9E75; margin: 20px 0 8px 0;
+       padding-bottom: 4px; border-bottom: 1px solid #d1fae5; }
+  p { margin-bottom: 8px; font-size: 10px; line-height: 1.7; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  th { background-color: #1D9E75; color: #ffffff; font-size: 9px;
+       font-weight: bold; padding: 6px 8px; text-align: left; }
+  td { font-size: 9px; padding: 5px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background-color: #f9fafb; }
+
+  .kpi-table { width: 100%; margin-bottom: 16px; border-collapse: separate; border-spacing: 6px; }
+  .kpi-table td { border: none; background: none; padding: 0; vertical-align: top; width: 33%; }
+  .kpi-card { background-color: #f0fdf9; border: 1px solid #6ee7b7; border-radius: 4px; padding: 10px 12px; }
+  .kpi-value { font-size: 15px; font-weight: bold; color: #1D9E75; }
+  .kpi-name { font-size: 8px; font-weight: bold; color: #374151; margin-top: 3px; }
+  .kpi-desc { font-size: 8px; color: #6b7280; margin-top: 2px; line-height: 1.4; }
+
+  .tendencia { margin-bottom: 8px; padding: 8px 10px;
+               border-left: 3px solid #1D9E75; background-color: #f9fafb; }
+  .tendencia-titulo { font-size: 10px; font-weight: bold; color: #111827; margin-bottom: 3px; }
+  .tendencia-desc { font-size: 9px; color: #4b5563; line-height: 1.6; }
+
+  .rec-item { margin-bottom: 8px; padding: 8px 10px;
+              border: 1px solid #e5e7eb; background-color: #ffffff; }
+  .rec-titulo { font-size: 10px; font-weight: bold; color: #111827; margin-bottom: 3px; }
+  .rec-desc { font-size: 9px; color: #4b5563; line-height: 1.6; }
+
+  .conclusion-box { background-color: #f0fdf9; border: 1px solid #6ee7b7;
+                    padding: 12px 14px; margin-top: 8px; }
+  .conclusion-box p { font-size: 9.5px; color: #1f2937; margin: 0; }
+
+  .footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #e5e7eb;
+            font-size: 8px; color: #9ca3af; text-align: center; }
+  .report-logo { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+{% block content %}{% endblock %}
+</body>
+</html>

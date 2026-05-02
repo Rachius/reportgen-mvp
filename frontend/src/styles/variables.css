@@ -1,0 +1,384 @@
+/* =========================================================
+   Reporti — Design System v2
+   ========================================================= */
+
+/* ── LIGHT MODE ─────────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --bg:   #F8FAFB;
+  --bg2:  #FFFFFF;
+  --bg3:  #F0F4F7;
+  --card: #FFFFFF;
+
+  /* Borders */
+  --border:        rgba(0,0,0,0.07);
+  --border-strong: rgba(0,0,0,0.13);
+
+  /* Text */
+  --text:  #0F1923;
+  --text2: #4A5A6A;
+  --text3: #7A8A9A;
+
+  /* Brand */
+  --blue:         #4EC7F5;
+  --blue-light:   #EAF7FE;
+  --blue-dark:    #1A9FD4;
+  --blue-darker:  #0E6B8F;
+  --orange:       #FE7808;
+  --orange-light: #FFF3EA;
+  --orange-dark:  #D45F00;
+
+  /* Gradients */
+  --grad:      linear-gradient(135deg, #4EC7F5, #FE7808);
+  --grad-soft: linear-gradient(135deg, rgba(78,199,245,0.12), rgba(254,120,8,0.08));
+
+  /* Pills */
+  --pill-bg:   #EAF7FE;
+  --pill-text: #0E6B8F;
+
+  /* Tabs */
+  --tab-active-bg:       rgba(254,120,8,0.10);
+  --tab-active-text:     #B04500;
+  --tab-active-border:   #FE7808;
+  --tab-inactive-bg:     rgba(78,199,245,0.07);
+  --tab-inactive-text:   #1A9FD4;
+  --tab-inactive-border: rgba(78,199,245,0.25);
+
+  /* Buttons */
+  --btn-bg:         rgba(78,199,245,0.10);
+  --btn-text:       #B04500;
+  --btn-border:     #FE7808;
+  --btn-hover-bg:   #FE7808;
+  --btn-hover-text: #fff;
+
+  /* Effects */
+  --shadow:  0 4px 24px rgba(0,0,0,0.06);
+  --nav-bg:  rgba(255,255,255,0.92);
+
+  /* Border radius */
+  --radius-card:  10px;
+  --radius-btn:   4px;
+  --radius-input: 4px;
+
+  /* Transitions */
+  --transition-fast:  all 0.15s ease;
+  --transition-theme: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+
+  /* ── Backward-compat aliases (usados en componentes existentes) */
+  --surface:        var(--bg2);
+  --surface-2:      var(--bg);
+  --surface-3:      var(--bg3);
+  --text-primary:   var(--text);
+  --text-secondary: var(--text2);
+  --text-muted:     var(--text3);
+}
+
+/* ── DARK MODE ───────────────────────────────────────────── */
+.dark {
+  --bg:   #0F172A;
+  --bg2:  #111827;
+  --bg3:  #1F2937;
+  --card: #111827;
+
+  --border:        #1F2937;
+  --border-strong: #374151;
+
+  --text:  #F9FAFB;
+  --text2: #9CA3AF;
+  --text3: #6B7280;
+
+  --blue:         #3B82F6;
+  --blue-light:   rgba(59,130,246,0.12);
+  --blue-dark:    #60A5FA;
+  --blue-darker:  #93C5FD;
+
+  --orange:       #8B5CF6;
+  --orange-light: rgba(139,92,246,0.12);
+  --orange-dark:  #A78BFA;
+
+  --grad:      linear-gradient(135deg, #3B82F6, #8B5CF6);
+  --grad-soft: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
+
+  --pill-bg:   rgba(59,130,246,0.12);
+  --pill-text: #93C5FD;
+
+  --tab-active-bg:       rgba(139,92,246,0.15);
+  --tab-active-text:     #C4B5FD;
+  --tab-active-border:   #8B5CF6;
+  --tab-inactive-bg:     rgba(59,130,246,0.08);
+  --tab-inactive-text:   #93C5FD;
+  --tab-inactive-border: rgba(59,130,246,0.20);
+
+  --btn-bg:         rgba(59,130,246,0.12);
+  --btn-text:       #93C5FD;
+  --btn-border:     #3B82F6;
+  --btn-hover-bg:   #3B82F6;
+  --btn-hover-text: #fff;
+
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --nav-bg:  rgba(15,23,42,0.88);
+}
+
+/* =========================================================
+   Base
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: var(--transition-theme);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   Cards
+   ========================================================= */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.card-2 {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem;
+}
+
+/* Accent bar left */
+.card-accent-blue  { border-left: 3px solid var(--blue); }
+.card-accent-orange { border-left: 3px solid var(--orange); }
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+  min-height: 38px;
+}
+
+.btn:active:not(:disabled) { transform: scale(0.99); }
+
+.btn:disabled {
+  background: var(--bg3) !important;
+  color: var(--text3) !important;
+  border-color: var(--border) !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Gradient */
+.btn-grad {
+  background: var(--grad);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+.btn-grad:hover:not(:disabled) { opacity: 0.88; }
+
+/* Primary */
+.btn-primary {
+  border: 1.5px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+}
+
+/* Outline */
+.btn-outline {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text2);
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--orange);
+  color: var(--orange-dark);
+  background: var(--orange-light);
+}
+
+/* Danger */
+.btn-danger {
+  border: 1px solid rgba(239,68,68,0.4);
+  background: transparent;
+  color: #DC2626;
+}
+.btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.06); }
+
+/* =========================================================
+   Inputs & Selects
+   ========================================================= */
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.input:focus { border-color: var(--blue); }
+.input::placeholder { color: var(--text3); }
+
+/* =========================================================
+   Pills / Badges
+   ========================================================= */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  white-space: nowrap;
+}
+
+.pill-orange {
+  background: var(--orange-light);
+  color: var(--orange-dark);
+}
+
+.pill-green  { background: #ECFDF5; color: #065F46; }
+.dark .pill-green  { background: rgba(16,185,129,0.12); color: #6EE7B7; }
+
+.pill-amber  { background: #FFFBEB; color: #92400E; }
+.dark .pill-amber  { background: rgba(245,158,11,0.12); color: #FCD34D; }
+
+.pill-red    { background: #FEF2F2; color: #991B1B; }
+.dark .pill-red    { background: rgba(239,68,68,0.12); color: #FCA5A5; }
+
+/* =========================================================
+   Progress bars
+   ========================================================= */
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill-blue {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.progress-fill-orange {
+  height: 100%;
+  background: var(--orange);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.progress-fill-amber {
+  height: 100%;
+  background: #F59E0B;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* =========================================================
+   Tabs
+   ========================================================= */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 1.1rem;
+  height: 42px;
+  border-radius: 5px 5px 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-decoration: none;
+  border: 1px solid var(--tab-inactive-border);
+  background: var(--tab-inactive-bg);
+  color: var(--tab-inactive-text);
+  margin-bottom: -1px;
+  position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tab:hover:not(.tab-active) {
+  background: var(--bg2);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.tab-active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  border-color: var(--tab-active-border);
+  border-bottom-color: var(--tab-active-bg);
+  font-weight: 600;
+}
+
+/* =========================================================
+   Section label & Divider
+   ========================================================= */
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+/* =========================================================
+   Gradient text helper
+   ========================================================= */
+.grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* =========================================================
+   Spinner
+   ========================================================= */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid var(--blue-light);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="header">
+  {% if logo_b64 %}
+  <div class="report-logo">
+    <img src="{{ logo_b64 }}" alt="{{ company_name }}"
+         style="max-height: 48px; max-width: 160px; object-fit: contain; display: block;" />
+  </div>
+  {% endif %}
+  <table class="header-table">
+    <tr>
+      <td><span class="logo-text">Reporti</span></td>
+      {% if company_name %}
+      <td><span class="company-name">{{ company_name }}{% if industry %} · {{ industry }}{% endif %}</span></td>
+      {% endif %}
+    </tr>
+  </table>
+  <div class="report-title">{{ titulo }}</div>
+  <div class="report-subtitle">Reporte de Ventas · Moneda: {{ currency }}</div>
+</div>
+
+<h2>Resumen ejecutivo</h2>
+<p>{{ resumen_ejecutivo }}</p>
+
+<h2>KPIs principales</h2>
+<table class="kpi-table">
+  {% set ns = namespace(count=0) %}
+  {% for kpi in kpis %}
+    {% if ns.count % 3 == 0 %}<tr>{% endif %}
+    <td>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ kpi.valor }}</div>
+        <div class="kpi-name">{{ kpi.nombre }}</div>
+        <div class="kpi-desc">{{ kpi.descripcion }}</div>
+      </div>
+    </td>
+    {% set ns.count = ns.count + 1 %}
+    {% if ns.count % 3 == 0 %}</tr>{% endif %}
+  {% endfor %}
+  {% if ns.count % 3 != 0 %}
+    {% for i in range(3 - (ns.count % 3)) %}<td></td>{% endfor %}
+    </tr>
+  {% endif %}
+</table>
+
+<h2>Tendencias identificadas</h2>
+{% for t in tendencias %}
+<div class="tendencia">
+  <div class="tendencia-titulo">{{ t.titulo }}</div>
+  <div class="tendencia-desc">{{ t.descripcion }}</div>
+</div>
+{% endfor %}
+
+<h2>Top items</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Categoría</th>
+      <th>Valor</th>
+      <th>Participación</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in top_items %}
+    <tr>
+      <td>{{ item.categoria }}</td>
+      <td>{{ item.valor }}</td>
+      <td>{{ item.participacion }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Recomendaciones</h2>
+{% for rec in recomendaciones %}
+<div class="rec-item">
+  <div class="rec-titulo">{{ rec.titulo }}</div>
+  <div class="rec-desc">{{ rec.descripcion }}</div>
+</div>
+{% endfor %}
+
+<h2>Conclusión</h2>
+<div class="conclusion-box">
+  <p>{{ conclusion }}</p>
+</div>
+
+<div class="footer">
+  Generado por Reporti · Análisis impulsado por IA
+</div>
+
+{% endblock %}
