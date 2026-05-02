@@ -1,7 +1,13 @@
 from app.services.db_service import database
 
 async def get_profile(user_id: str) -> dict:
-    query = "SELECT * FROM company_profiles WHERE user_id = :user_id"
+    query = """
+        SELECT company_name, industry, country, currency,
+               business_description, extra_context, column_mapping,
+               onboarding_completed, logo_url
+        FROM company_profiles
+        WHERE user_id = :user_id
+    """
     profile = await database.fetch_one(query=query, values={"user_id": user_id})
     return dict(profile) if profile else {}
 
@@ -18,7 +24,9 @@ async def update_profile(user_id: str, data: dict) -> dict:
             onboarding_completed = :onboarding_completed,
             updated_at = NOW()
         WHERE user_id = :user_id
-        RETURNING *
+        RETURNING company_name, industry, country, currency,
+                  business_description, extra_context, column_mapping,
+                  onboarding_completed, logo_url
     """
     import json
     values = {

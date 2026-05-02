@@ -72,6 +72,45 @@ function ConsultationCard({ c, onAnswered }) {
             <p style={{ color: '#7A9AB8', fontSize: '0.8rem', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{c.message}</p>
           </div>
 
+          {c.attachment_url && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.875rem' }}>
+              <p style={{ color: '#4A6078', fontWeight: 600, fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                Archivo adjunto
+              </p>
+              {/\.(png|jpg|jpeg|webp)$/i.test(c.attachment_url) ? (
+                <a href={c.attachment_url} target="_blank" rel="noopener noreferrer">
+                  <img src={c.attachment_url} alt="Adjunto" style={{
+                    maxHeight: 128, borderRadius: 6,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    objectFit: 'contain', cursor: 'pointer',
+                    transition: 'opacity 0.15s',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  />
+                </a>
+              ) : (
+                <a href={c.attachment_url} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    padding: '0.4rem 0.875rem', borderRadius: 4,
+                    background: 'rgba(78,199,245,0.08)', border: '1px solid rgba(78,199,245,0.2)',
+                    color: '#4EC7F5', fontSize: '0.78rem', fontWeight: 500,
+                    textDecoration: 'none', transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(78,199,245,0.14)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(78,199,245,0.08)'}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  Ver PDF adjunto
+                </a>
+              )}
+            </div>
+          )}
+
           {c.admin_response && (
             <div style={{ background: 'rgba(78,199,245,0.08)', border: '1px solid rgba(78,199,245,0.2)', borderRadius: 3, padding: '0.75rem' }}>
               <p style={{ color: '#4EC7F5', fontWeight: 600, fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Respuesta</p>

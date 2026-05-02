@@ -14,7 +14,7 @@ PLAN_CONFIG = {
     'pro':     {'reports': 30, 'consultations': 10},
 }
 
-STARTER_PRICE = 17500
+STARTER_PRICE = 20000
 
 async def get_or_create_subscription(user_id: str) -> dict:
     query = "SELECT * FROM subscriptions WHERE user_id = :user_id"

@@ -8,7 +8,23 @@ def generate_pdf(analysis: dict, report_type: str = "ventas", profile: dict = No
     builder = get_builder(report_type, analysis, profile)
     return builder.build_pdf()
 
-def generate_pptx(analysis: dict) -> bytes:
+def add_logo_to_slide(slide, logo_url: str):
+    import requests
+    try:
+        response = requests.get(logo_url, timeout=5)
+        if response.status_code == 200:
+            img_stream = io.BytesIO(response.content)
+            slide.shapes.add_picture(
+                img_stream,
+                left=Inches(0.3),
+                top=Inches(0.2),
+                height=Inches(0.5),
+            )
+    except Exception:
+        pass
+
+def generate_pptx(analysis: dict, profile: dict = None) -> bytes:
+    profile = profile or {}
     prs = Presentation()
     prs.slide_width = Inches(13.33)
     prs.slide_height = Inches(7.5)
@@ -45,6 +61,9 @@ def generate_pptx(analysis: dict) -> bytes:
     accent.line.fill.background()
     add_textbox(slide1, analysis['titulo'], 0.5, 2.5, 12, 1.2, size=32, bold=True, color=DARK_RGB)
     add_textbox(slide1, 'Reporte generado por Reporti', 0.5, 3.9, 8, 0.5, size=14, color=GRAY_RGB)
+
+    if profile.get("logo_url"):
+        add_logo_to_slide(slide1, profile["logo_url"])
 
     slide2 = add_slide()
     add_textbox(slide2, 'Resumen ejecutivo', 0.4, 0.3, 12, 0.6, size=20, bold=True, color=TEAL_RGB)

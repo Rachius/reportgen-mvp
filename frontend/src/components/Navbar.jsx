@@ -17,7 +17,6 @@ export default function Navbar() {
     <nav style={{
       background: 'var(--nav-bg)',
       backdropFilter: 'blur(8px)',
-      borderBottom: '1px solid var(--border)',
       position: 'sticky',
       top: 0,
       zIndex: 50,

@@ -63,3 +63,17 @@ export async function getRecentReports(limit = 5) {
     return []
   }
 }
+
+export async function uploadCompanyLogo(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post('/api/profile/logo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
+}
+
+export async function deleteCompanyLogo() {
+  const { data } = await api.delete('/api/profile/logo')
+  return data
+}

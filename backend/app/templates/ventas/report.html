@@ -2,6 +2,12 @@
 {% block content %}
 
 <div class="header">
+  {% if logo_b64 %}
+  <div class="report-logo">
+    <img src="{{ logo_b64 }}" alt="{{ company_name }}"
+         style="max-height: 48px; max-width: 160px; object-fit: contain; display: block;" />
+  </div>
+  {% endif %}
   <table class="header-table">
     <tr>
       <td><span class="logo-text">Reporti</span></td>

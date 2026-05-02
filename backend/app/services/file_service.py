@@ -2,6 +2,7 @@ import pandas as pd
 from fastapi import UploadFile, HTTPException
 import io
 import numpy as np
+from typing import Optional
 
 ALLOWED_EXTENSIONS = {'.csv', '.xlsx', '.xls'}
 MAX_SIZE_MB = 10
@@ -43,7 +44,6 @@ async def parse_file(file: UploadFile) -> dict:
     if df.empty:
         raise HTTPException(400, "El archivo está vacío")
 
-    # Convertir fechas a string para serialización
     for col in df.select_dtypes(include=['datetime64[ns]', 'datetime64[ns, UTC]']).columns:
         df[col] = df[col].dt.strftime('%Y-%m-%d')
 
@@ -56,3 +56,25 @@ async def parse_file(file: UploadFile) -> dict:
         "stats": make_serializable(df.describe(include='all').fillna('').to_dict()),
         "sums": make_serializable(df.select_dtypes(include='number').sum().to_dict()),
     }
+
+
+async def upload_logo_to_gcs(
+    file_bytes: bytes,
+    filename: str,
+    user_id: str,
+    content_type: str,
+) -> str:
+    from google.cloud import storage
+    from app.config import settings
+
+    client = storage.Client()
+    bucket = client.bucket(settings.GCS_BUCKET_NAME)
+
+    ext = filename.split('.')[-1].lower()
+    blob_name = f"logos/{user_id}/logo.{ext}"
+    blob = bucket.blob(blob_name)
+
+    blob.upload_from_string(file_bytes, content_type=content_type)
+    blob.make_public()
+
+    return blob.public_url

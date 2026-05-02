@@ -5,33 +5,26 @@ import ReportConfig from '../components/ReportConfig'
 import DownloadPanel from '../components/DownloadPanel'
 import { useReportGenerator } from '../hooks/useReportGenerator'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import { getSubscription, getRecentReports } from '../lib/reportApi'
 import { getUserConsultations } from '../lib/adminApi'
 import { useNavigate } from 'react-router-dom'
 
-function getGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return 'Buenos días'
-  if (h < 20) return 'Buenas tardes'
-  return 'Buenas noches'
-}
-
 function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+  })
 }
 
 const PLAN_LABELS = { free: 'Free', starter: 'Starter', pro: 'Pro' }
 const STATUS_LABELS = { done: 'Listo', error: 'Error', processing: 'Procesando', pending: 'Pendiente' }
-const STATUS_STYLES = {
-  done:       { background: '#ECFDF5', color: '#065F46' },
-  error:      { background: '#FEF2F2', color: '#991B1B' },
-  processing: { background: '#FFFBEB', color: '#92400E' },
-  pending:    { background: '#FFFBEB', color: '#92400E' },
-}
 
 export default function Home() {
   const { user } = useAuth()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const navigate = useNavigate()
+
   const [file, setFile] = useState(null)
   const [config, setConfig] = useState({ type: 'ventas', formats: ['pdf'] })
   const { phase, progress, label, urls, error, generate, reset, PHASES } = useReportGenerator()
@@ -49,330 +42,381 @@ export default function Home() {
     ]).then(([subData, reports, consultations]) => {
       setSub(subData)
       setRecentReports(reports || [])
-      const pending = consultations?.find(c => c.status === 'pending')
-      setPendingConsultation(pending || null)
+      setPendingConsultation(consultations?.find(c => c.status === 'pending') || null)
     }).finally(() => setLoadingData(false))
   }, [])
 
   const handleGenerate = () => generate(file, config)
   const handleNewReport = () => { setFile(null); reset() }
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'usuario'
-  const reportsPct   = sub ? Math.min(100, Math.round((sub.reports_used / sub.reports_limit) * 100)) : 0
-  const consultPct   = sub?.consultations_limit
+  const reportsPct = sub ? Math.min(100, Math.round((sub.reports_used / sub.reports_limit) * 100)) : 0
+  const consultPct = sub?.consultations_limit
     ? Math.min(100, Math.round(((sub.consultations_used || 0) / sub.consultations_limit) * 100))
     : 0
-
+  const nearLimit = sub && sub.reports_used >= sub.reports_limit - 2
+  const reportsLeft = sub ? Math.max(0, sub.reports_limit - sub.reports_used) : 0
   const renewalDate = sub?.current_period_end
     ? new Date(sub.current_period_end).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
     : null
 
-  const nearLimit = sub && sub.reports_used >= sub.reports_limit - 2
-  const reportsLeft = sub ? Math.max(0, sub.reports_limit - sub.reports_used) : 0
+  /* ── Theme-aware style helpers ─────────────────────────── */
+  const getStatusStyle = (status) => ({
+    done:       isDark ? { background: 'rgba(34,197,94,0.12)',  color: '#86EFAC' } : { background: 'rgba(34,197,94,0.10)',  color: '#15803D' },
+    error:      isDark ? { background: 'rgba(239,68,68,0.12)',  color: '#FCA5A5' } : { background: 'rgba(239,68,68,0.10)',  color: '#991B1B' },
+    processing: isDark ? { background: 'rgba(245,158,11,0.12)', color: '#FCD34D' } : { background: 'rgba(245,158,11,0.10)', color: '#92400E' },
+    pending:    isDark ? { background: 'rgba(245,158,11,0.12)', color: '#FCD34D' } : { background: 'rgba(245,158,11,0.10)', color: '#92400E' },
+  }[status] || (isDark ? { background: 'rgba(245,158,11,0.12)', color: '#FCD34D' } : { background: 'rgba(245,158,11,0.10)', color: '#92400E' }))
+
+  const fmtPillStyle = isDark
+    ? { background: 'rgba(78,199,245,0.15)', color: '#4EC7F5' }
+    : { background: 'rgba(78,199,245,0.12)', color: '#0E6B8F' }
+
+  const glassCard = {
+    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.72)',
+    border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)',
+    borderRadius: 12,
+    backdropFilter: 'blur(12px)',
+    boxShadow: isDark ? 'none' : '0 1px 4px rgba(0,0,0,0.03)',
+  }
+
+  const progressTrackStyle = {
+    width: '100%', height: 4, borderRadius: 999,
+    background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+  }
+
+  const stepBadgeStyle = {
+    background: isDark ? 'rgba(254,120,8,0.12)' : 'rgba(254,120,8,0.10)',
+    color: isDark ? '#FFA040' : '#D45F00',
+    border: `1px solid ${isDark ? 'rgba(254,120,8,0.2)' : 'rgba(254,120,8,0.25)'}`,
+  }
+
+  const dividerStyle = {
+    background: isDark
+      ? 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)'
+      : 'linear-gradient(90deg, transparent, rgba(15,23,42,0.10), transparent)',
+  }
+
+  const workspaceCard = {
+    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.88)',
+    border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(15,23,42,0.07)',
+    backdropFilter: 'blur(18px)',
+    boxShadow: isDark
+      ? '0 20px 60px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)'
+      : undefined,
+  }
+
+  const valuePillStyle = {
+    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.78)',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.06)'}`,
+    backdropFilter: 'blur(12px)',
+  }
+
+  const heroGradient = isDark
+    ? 'radial-gradient(circle at 15% 10%, rgba(59,130,246,0.10), transparent 28%), radial-gradient(circle at 85% 15%, rgba(139,92,246,0.08), transparent 25%), #0F172A'
+    : 'radial-gradient(circle at 15% 10%, rgba(78,199,245,0.12), transparent 28%), radial-gradient(circle at 85% 15%, rgba(254,120,8,0.10), transparent 25%), linear-gradient(180deg, #F5F8FA 0%, #FAFBFC 100%)'
 
   return (
-    <PageLayout>
-      {/* ── Header ────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
-        <div>
-          <h1 className="grad-text" style={{ fontWeight: 700, fontSize: '1.2rem' }}>
-            {getGreeting()}, {displayName}
+    <PageLayout maxWidth="max-w-6xl">
+
+      {/* ── Hero / workspace wrapper ─────────────────────── */}
+      <div className="relative -mx-4 -mt-8 px-4 pb-10 pt-8" style={{ background: heroGradient }}>
+
+        {/* Page header */}
+        <section className="mx-auto mb-7 max-w-3xl text-center">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold"
+            style={{ background: 'rgba(78,199,245,0.10)', color: 'var(--blue-dark)', border: '1px solid rgba(78,199,245,0.22)' }}>
+            ✦ Workspace de análisis
+          </p>
+          <h1 style={{
+            fontWeight: 900, fontSize: 'clamp(1.6rem, 3vw, 2.45rem)',
+            color: 'var(--text)', lineHeight: 1.05, letterSpacing: '-0.04em',
+          }}>
+            Subí tu Excel y obtené decisiones en segundos
           </h1>
           {sub && (
-            <p style={{ color: 'var(--text2)', fontSize: '0.78rem', marginTop: 3 }}>
+            <p style={{ color: 'var(--text3)', fontSize: '0.82rem', marginTop: 10 }}>
               Plan {PLAN_LABELS[sub.plan] || 'Free'} · {sub.reports_used} de {sub.reports_limit} reportes usados este mes
+              {renewalDate ? ` · Se renueva el ${renewalDate}` : ''}
             </p>
           )}
+        </section>
+
+        {/* Value props pill */}
+        <div className="mx-auto mb-5 grid max-w-5xl grid-cols-1 gap-2 rounded-2xl px-4 py-3 shadow-sm md:grid-cols-3"
+          style={valuePillStyle}>
+          {['KPIs automáticos', 'Recomendaciones con IA', 'Listo en 30 segundos'].map(item => (
+            <div key={item} className="flex items-center justify-center gap-2 text-sm font-semibold"
+              style={{ color: 'var(--text2)' }}>
+              <span style={{ color: '#22C55E' }}>✓</span>
+              {item}
+            </div>
+          ))}
         </div>
-        {renewalDate && (
-          <span className="pill pill-orange" style={{ fontSize: '0.72rem' }}>
-            Se renueva el {renewalDate}
-          </span>
+
+        {/* Warning bar */}
+        {nearLimit && (
+          <div className="mx-auto mb-5 flex max-w-5xl items-center gap-3 rounded-2xl px-4 py-3"
+            style={{ background: '#FFFBEB', border: '1px solid #FCD34D' }}>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-black"
+              style={{ background: '#FCD34D', color: '#78350F' }}>!</span>
+            <p style={{ color: '#92400E', fontSize: '0.85rem' }}>
+              Te {reportsLeft === 1 ? 'queda' : 'quedan'} <strong>{reportsLeft}</strong> reporte{reportsLeft !== 1 ? 's' : ''} este mes.{' '}
+              <button onClick={() => navigate('/subscription')}
+                style={{ color: '#B45309', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                Actualizá tu plan
+              </button>
+            </p>
+          </div>
         )}
+
+        {/* ── Main workspace card ───────────────────────── */}
+        <section id="upload-section" className="mx-auto max-w-5xl overflow-hidden rounded-[2rem] shadow-2xl"
+          style={workspaceCard}>
+          <div style={{ height: 4, background: 'linear-gradient(90deg, #4EC7F5, #FE7808)' }} />
+
+          <div className="p-5 md:p-8">
+
+            {/* Step 1 */}
+            <div className="mb-4 flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full text-[0.7rem] font-bold"
+                style={stepBadgeStyle}>1</span>
+              <p style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
+                Subí tu archivo
+              </p>
+            </div>
+
+            <FileDropzone file={file} onFile={setFile} onClear={reset} />
+
+            {/* Trust chips */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+              {['No guardamos tus datos', '100% seguro', 'Resultados en segundos'].map(t => (
+                <div key={t} className="flex items-center gap-1.5">
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }} />
+                  <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'var(--text3)', fontSize: '0.72rem', fontWeight: 600 }}>{t}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="my-8 h-px" style={dividerStyle} />
+
+            <ReportConfig config={config} onChange={setConfig} />
+
+            {/* Generate button */}
+            {phase === PHASES.IDLE && (
+              file ? (
+                <button onClick={handleGenerate}
+                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-base font-black text-white shadow-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl"
+                  style={{ background: 'linear-gradient(135deg, #4EC7F5, #FE7808)', boxShadow: '0 16px 35px rgba(254,120,8,0.28)' }}>
+                  ✦ Generar análisis →
+                </button>
+              ) : (
+                <button disabled className="mt-8 w-full rounded-2xl px-5 py-4 text-sm font-bold"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'var(--bg3)', color: 'var(--text3)', cursor: 'not-allowed', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)'}` }}>
+                  Subí un archivo para comenzar
+                </button>
+              )
+            )}
+
+            {phase !== PHASES.IDLE && (
+              <div className="mt-8">
+                <DownloadPanel phase={phase} progress={progress} label={label}
+                  urls={urls} error={error} PHASES={PHASES} onNew={handleNewReport} />
+              </div>
+            )}
+          </div>
+        </section>
       </div>
 
-      {/* ── Warning bar ───────────────────────────────────────── */}
-      {nearLimit && (
-        <div style={{
-          background: '#FFFBEB',
-          border: '1px solid #FCD34D',
-          borderRadius: 'var(--radius-card)',
-          padding: '0.65rem 1rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.6rem',
-          marginBottom: '1.25rem',
-        }}>
-          <span style={{ fontSize: '0.9rem' }}>!</span>
-          <p style={{ color: '#92400E', fontSize: '0.8rem' }}>
-            Te {reportsLeft === 1 ? 'queda' : 'quedan'} {reportsLeft} reporte{reportsLeft !== 1 ? 's' : ''} este mes.{' '}
-            <button
-              onClick={() => navigate('/subscription')}
-              style={{ color: '#B45309', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-            >
-              Actualizá tu plan
-            </button>
+      {/* ── Activity section ─────────────────────────────── */}
+      <section className="mt-8 space-y-5">
+
+        {/* Section header */}
+        <div>
+          <p style={{ fontSize: '0.625rem', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 4 }}>
+            Actividad de tu cuenta
           </p>
+          <h2 style={{ color: 'var(--text)', fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em' }}>
+            Seguimiento de uso y reportes
+          </h2>
         </div>
-      )}
 
-      {/* ── 3 Cards ───────────────────────────────────────────── */}
-      {!loadingData && (
-        <div className="grid grid-cols-1 gap-4 mb-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-          {/* Último reporte */}
-          <div className="card card-accent-blue" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p className="section-label">Último reporte</p>
-            {recentReports[0] ? (
-              <>
-                <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {recentReports[0].filename}
-                </p>
-                <p style={{ color: 'var(--text3)', fontSize: '0.72rem' }}>{formatDate(recentReports[0].created_at)}</p>
-                <div className="flex gap-1 flex-wrap">
-                  <span className="pill">{recentReports[0].report_type}</span>
-                  {(Array.isArray(recentReports[0].formats)
-                    ? recentReports[0].formats
-                    : JSON.parse(recentReports[0].formats || '[]')
-                  ).map(f => (
-                    <span key={f} className="pill" style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}>{f}</span>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-                <p style={{ fontSize: '1.5rem', marginBottom: 6 }}>📄</p>
-                <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.8rem', marginBottom: 4 }}>Sin reportes todavía</p>
-                <p style={{ color: 'var(--text3)', fontSize: '0.72rem', marginBottom: 8 }}>
-                  Subí tu primer archivo para generar un análisis profesional
-                </p>
-                <button
-                  onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
-                  style={{ color: 'var(--blue-dark)', fontSize: '0.78rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                >
-                  Generar mi primer reporte
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Reporte anterior */}
-          <div className="card card-accent-blue" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p className="section-label">Reporte anterior</p>
-            {recentReports[1] ? (
-              <>
-                <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {recentReports[1].filename}
-                </p>
-                <p style={{ color: 'var(--text3)', fontSize: '0.72rem' }}>{formatDate(recentReports[1].created_at)}</p>
-                <div className="flex gap-1 flex-wrap">
-                  <span className="pill">{recentReports[1].report_type}</span>
-                  {(Array.isArray(recentReports[1].formats)
-                    ? recentReports[1].formats
-                    : JSON.parse(recentReports[1].formats || '[]')
-                  ).map(f => (
-                    <span key={f} className="pill" style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}>{f}</span>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-                <p style={{ color: 'var(--text3)', fontSize: '0.8rem' }}>
-                  {recentReports[0] ? 'Todavía no hay más reportes' : 'Sin reportes todavía'}
-                </p>
-                <p style={{ color: 'var(--text3)', fontSize: '0.72rem', marginTop: 4 }}>
-                  A partir del segundo reporte verás el historial aquí
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Consulta pendiente */}
-          <div className="card card-accent-orange" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p className="section-label">Consulta pendiente</p>
-            {pendingConsultation ? (
-              <>
-                <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {pendingConsultation.subject}
-                </p>
-                <p style={{ color: 'var(--text3)', fontSize: '0.72rem' }}>{formatDate(pendingConsultation.created_at)}</p>
-                <span className="pill pill-amber">Pendiente de respuesta</span>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-                <p style={{ fontSize: '1.5rem', marginBottom: 6 }}>💬</p>
-                <p style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.8rem', marginBottom: 4 }}>Sin consultas pendientes</p>
-                <p style={{ color: 'var(--text3)', fontSize: '0.72rem', marginBottom: 8 }}>
-                  Con el plan Starter podés enviar consultas al analista
-                </p>
-                <button
-                  onClick={() => navigate('/subscription')}
-                  style={{ color: 'var(--orange-dark)', fontSize: '0.78rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                >
-                  Ver plan Starter
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Barra de uso ──────────────────────────────────────── */}
-      {sub && (
-        <div className="card mb-5">
-          <div className="flex flex-wrap gap-6">
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div className="flex justify-between mb-1">
-                <span style={{ color: 'var(--text2)', fontSize: '0.78rem' }}>Reportes mensuales</span>
-                <span style={{ color: nearLimit ? '#B45309' : 'var(--blue-dark)', fontSize: '0.78rem', fontWeight: nearLimit ? 700 : 600 }}>
+        {/* Usage card */}
+        {sub && (
+          <div className="grid grid-cols-1 gap-5 rounded-2xl p-4 md:grid-cols-2" style={glassCard}>
+            {/* Reportes */}
+            <div>
+              <div className="mb-2 flex justify-between">
+                <span style={{ color: 'var(--text2)', fontSize: '0.78rem', fontWeight: 600 }}>Reportes mensuales</span>
+                <span style={{ color: nearLimit ? '#F59E0B' : 'var(--blue-dark)', fontSize: '0.78rem', fontWeight: 800 }}>
                   {sub.reports_used}/{sub.reports_limit}
                 </span>
               </div>
-              <div className="progress-track">
-                <div
-                  className={nearLimit ? 'progress-fill-amber' : 'progress-fill-blue'}
-                  style={{ width: `${reportsPct}%` }}
-                />
+              <div style={progressTrackStyle}>
+                <div style={{
+                  height: '100%', borderRadius: 999, transition: 'width 0.4s ease',
+                  width: `${reportsPct}%`,
+                  background: nearLimit ? 'linear-gradient(90deg, #F59E0B, #FCD34D)' : 'linear-gradient(90deg, #4EC7F5, #38BDF8)',
+                }} />
               </div>
             </div>
+
+            {/* Consultas */}
             {sub.consultations_limit > 0 && (
-              <div style={{ flex: 1, minWidth: 160 }}>
-                <div className="flex justify-between mb-1">
-                  <span style={{ color: 'var(--text2)', fontSize: '0.78rem' }}>Consultas al analista</span>
-                  <span style={{ color: 'var(--orange-dark)', fontSize: '0.78rem', fontWeight: 600 }}>
+              <div>
+                <div className="mb-2 flex justify-between">
+                  <span style={{ color: 'var(--text2)', fontSize: '0.78rem', fontWeight: 600 }}>Consultas al analista</span>
+                  <span style={{ color: 'var(--orange-dark)', fontSize: '0.78rem', fontWeight: 800 }}>
                     {sub.consultations_used || 0}/{sub.consultations_limit}
                   </span>
                 </div>
-                <div className="progress-track">
-                  <div className="progress-fill-orange" style={{ width: `${consultPct}%` }} />
+                <div style={progressTrackStyle}>
+                  <div style={{
+                    height: '100%', borderRadius: 999, transition: 'width 0.4s ease',
+                    width: `${consultPct}%`,
+                    background: 'linear-gradient(90deg, #FE7808, #FB923C)',
+                  }} />
                 </div>
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Generar reporte ───────────────────────────────────── */}
-      <div id="upload-section" className="card mb-5" style={{
-        borderTop: '3px solid transparent',
-        borderImage: 'var(--grad) 1',
-        borderRadius: 'var(--radius-card)',
-        padding: 0,
-        overflow: 'hidden',
-      }}>
-        <div style={{ padding: '1.25rem' }}>
-          <h2 style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.95rem', marginBottom: 3 }}>
-            Generar nuevo reporte
-          </h2>
-          <p style={{ color: 'var(--text3)', fontSize: '0.78rem', marginBottom: '1rem' }}>
-            Subí tu archivo de datos y obtené un análisis profesional en segundos.
-          </p>
+        {/* Info cards */}
+        {!loadingData && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
-          <FileDropzone file={file} onFile={setFile} onClear={reset} />
-
-          {/* Trust line */}
-          <p style={{ color: 'var(--text3)', fontSize: '0.7rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', display: 'inline-block', flexShrink: 0 }} />
-            Tus archivos se procesan de forma segura y no se almacenan.
-          </p>
-
-          <div style={{ marginTop: '1rem' }}>
-            <ReportConfig config={config} onChange={setConfig} />
-          </div>
-
-          {phase === PHASES.IDLE && (
-            <button
-              onClick={handleGenerate}
-              disabled={!file}
-              className="btn btn-primary"
-              style={{ width: '100%', justifyContent: 'center', padding: '0.6rem', marginTop: '1rem' }}
-            >
-              {file ? 'Generar reporte' : 'Seleccioná un archivo para continuar'}
-            </button>
-          )}
-
-          {phase !== PHASES.IDLE && (
-            <div style={{ marginTop: '1rem' }}>
-              <DownloadPanel
-                phase={phase}
-                progress={progress}
-                label={label}
-                urls={urls}
-                error={error}
-                PHASES={PHASES}
-                onNew={handleNewReport}
-              />
+            {/* Último reporte */}
+            <div style={{
+              ...glassCard,
+              padding: '1.15rem', minHeight: 118,
+              borderLeft: '2.5px solid #4EC7F5',
+            }}>
+              <p style={{ fontSize: '0.6rem', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                Último reporte
+              </p>
+              {recentReports[0] ? (
+                <>
+                  <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.82rem', marginTop: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {recentReports[0].filename}
+                  </p>
+                  <p style={{ color: 'var(--text3)', fontSize: '0.68rem', marginTop: 3 }}>
+                    {formatDate(recentReports[0].created_at)}
+                  </p>
+                </>
+              ) : (
+                <p style={{ color: 'var(--text3)', fontSize: '0.75rem', marginTop: 8 }}>Sin reportes todavía</p>
+              )}
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* ── Reportes recientes ────────────────────────────────── */}
-      {recentReports.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.95rem' }}>
+            {/* Reporte anterior */}
+            <div style={{
+              ...glassCard,
+              padding: '1.15rem', minHeight: 118,
+              borderLeft: '2.5px solid #4EC7F5',
+            }}>
+              <p style={{ fontSize: '0.6rem', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                Reporte anterior
+              </p>
+              {recentReports[1] ? (
+                <>
+                  <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.82rem', marginTop: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {recentReports[1].filename}
+                  </p>
+                  <p style={{ color: 'var(--text3)', fontSize: '0.68rem', marginTop: 3 }}>
+                    {formatDate(recentReports[1].created_at)}
+                  </p>
+                </>
+              ) : (
+                <p style={{ color: 'var(--text3)', fontSize: '0.75rem', marginTop: 8 }}>
+                  {recentReports[0] ? 'Todavía no hay más reportes' : 'Sin reportes todavía'}
+                </p>
+              )}
+            </div>
+
+            {/* Consulta pendiente */}
+            <div style={{
+              ...glassCard,
+              padding: '1.15rem', minHeight: 118,
+              borderLeft: '2.5px solid #FE7808',
+            }}>
+              <p style={{ fontSize: '0.6rem', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                Consulta pendiente
+              </p>
+              {pendingConsultation ? (
+                <>
+                  <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: '0.82rem', marginTop: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {pendingConsultation.subject}
+                  </p>
+                  <p style={{ color: 'var(--text3)', fontSize: '0.68rem', marginTop: 3 }}>
+                    {formatDate(pendingConsultation.created_at)}
+                  </p>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', marginTop: 8,
+                    padding: '0.15rem 0.55rem', borderRadius: 999, fontSize: '0.65rem', fontWeight: 700,
+                    ...(isDark ? { background: 'rgba(245,158,11,0.12)', color: '#FCD34D' } : { background: 'rgba(245,158,11,0.10)', color: '#92400E' }),
+                  }}>Pendiente</span>
+                </>
+              ) : (
+                <p style={{ color: 'var(--text3)', fontSize: '0.75rem', marginTop: 8 }}>Sin consultas pendientes</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recent reports */}
+        {recentReports.length > 0 && (
+          <div className="rounded-2xl p-4" style={glassCard}>
+            <h2 style={{ color: 'var(--text)', fontWeight: 800, fontSize: '0.95rem', marginBottom: 12 }}>
               Reportes recientes
             </h2>
-          </div>
-          <div style={{
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-card)',
-            overflow: 'hidden',
-            boxShadow: 'var(--shadow)',
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg3)' }}>
-                  {['Archivo', 'Tipo', 'Fecha', 'Formatos', 'Estado'].map(h => (
-                    <th key={h} style={{
-                      padding: '0.6rem 1rem', textAlign: 'left',
-                      color: 'var(--text3)', fontWeight: 600,
-                      fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.05em',
-                    }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {recentReports.map((r, i) => {
-                  const fmts = Array.isArray(r.formats) ? r.formats : JSON.parse(r.formats || '[]')
-                  const stStyle = STATUS_STYLES[r.status] || STATUS_STYLES.pending
-                  return (
-                    <tr key={r.id || i} style={{ borderTop: '1px solid var(--border)' }}>
-                      <td style={{ padding: '0.65rem 1rem', color: 'var(--text)', fontWeight: 500, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        📊 {r.filename}
-                      </td>
-                      <td style={{ padding: '0.65rem 1rem', color: 'var(--text2)', textTransform: 'capitalize' }}>
-                        {r.report_type}
-                      </td>
-                      <td style={{ padding: '0.65rem 1rem', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
-                        {formatDate(r.created_at)}
-                      </td>
-                      <td style={{ padding: '0.65rem 1rem' }}>
-                        <div className="flex gap-1">
-                          {fmts.map(f => (
-                            <span key={f} className="pill" style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}>{f}</span>
-                          ))}
-                        </div>
-                      </td>
-                      <td style={{ padding: '0.65rem 1rem' }}>
-                        <span style={{
-                          ...stStyle,
+            <div>
+              {recentReports.map((r, i) => {
+                const fmts = Array.isArray(r.formats) ? r.formats : JSON.parse(r.formats || '[]')
+                const rowBorder = isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)'
+                return (
+                  <div key={r.id || i}
+                    className="flex flex-wrap items-center justify-between gap-3 py-2.5"
+                    style={{ borderBottom: i < recentReports.length - 1 ? rowBorder : 'none' }}>
+                    <div style={{ minWidth: 160 }}>
+                      <p style={{
+                        color: 'var(--text)', fontWeight: 600, fontSize: '0.82rem',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', marginRight: 4 }}>📊</span>
+                        {r.filename}
+                      </p>
+                      <p style={{ color: 'var(--text3)', fontSize: '0.68rem', marginTop: 2 }}>
+                        {r.report_type} · {formatDate(r.created_at)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {fmts.map(f => (
+                        <span key={f} style={{
+                          ...fmtPillStyle,
                           display: 'inline-flex', alignItems: 'center',
-                          padding: '0.15rem 0.6rem', borderRadius: 999,
-                          fontSize: '0.7rem', fontWeight: 500,
-                        }}>
-                          {STATUS_LABELS[r.status] || r.status}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                          padding: '0.12rem 0.5rem', borderRadius: 999,
+                          fontSize: '0.65rem', fontWeight: 700,
+                          fontFamily: 'monospace', textTransform: 'uppercase',
+                        }}>{f}</span>
+                      ))}
+                      <span style={{
+                        ...getStatusStyle(r.status),
+                        display: 'inline-flex', alignItems: 'center',
+                        padding: '0.12rem 0.5rem', borderRadius: 999,
+                        fontSize: '0.65rem', fontWeight: 700,
+                      }}>
+                        {STATUS_LABELS[r.status] || r.status}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </section>
     </PageLayout>
   )
 }

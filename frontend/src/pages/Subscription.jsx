@@ -19,7 +19,7 @@ const PLANS = [
   {
     key: 'starter',
     name: 'Starter',
-    price: '$17.500',
+    price: '$20.000',
     period: '/mes ARS',
     accent: 'var(--blue)',
     features: [

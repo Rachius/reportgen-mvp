@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getProfile, updateProfile } from '../lib/reportApi'
+import { getProfile, updateProfile, uploadCompanyLogo, deleteCompanyLogo } from '../lib/reportApi'
 import { useAuth } from '../context/AuthContext'
 import PageLayout from '../components/PageLayout'
 
@@ -60,6 +60,9 @@ export default function Profile() {
     company_name: '', industry: '', country: 'Argentina', currency: 'ARS',
     business_description: '', extra_context: '', column_mapping: {}, onboarding_completed: false,
   })
+  const [logoUrl, setLogoUrl] = useState(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [logoError, setLogoError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -92,10 +95,35 @@ export default function Profile() {
             : (profile.column_mapping || {}),
           onboarding_completed: profile.onboarding_completed || false,
         })
+        setLogoUrl(profile.logo_url || null)
       }
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setLogoUploading(true)
+    setLogoError(null)
+    try {
+      const result = await uploadCompanyLogo(file)
+      setLogoUrl(result.logo_url)
+    } catch (err) {
+      setLogoError(err.response?.data?.detail || 'Error al subir el logo. Intentá de nuevo.')
+    } finally {
+      setLogoUploading(false)
+    }
+  }
+
+  const handleDeleteLogo = async () => {
+    try {
+      await deleteCompanyLogo()
+      setLogoUrl(null)
+    } catch (err) {
+      console.error('Error al eliminar logo:', err)
+    }
+  }
 
   const set = (key, value) => setForm(f => ({ ...f, [key]: value }))
   const setMapping = (key, value) =>
@@ -192,6 +220,64 @@ export default function Profile() {
         {/* Datos básicos */}
         <Section title="Datos básicos">
           <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <Field label="Logo de la empresa">
+                {logoUrl && (
+                  <div className="flex items-center gap-3 mb-3">
+                    <div style={{
+                      width: 64, height: 64, borderRadius: 12,
+                      border: '1px solid var(--border-strong)',
+                      background: 'var(--bg3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden', flexShrink: 0,
+                    }}>
+                      <img src={logoUrl} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <div>
+                      <p style={{ color: 'var(--text2)', fontSize: '0.75rem', fontWeight: 600, marginBottom: 4 }}>Logo actual</p>
+                      <button
+                        onClick={handleDeleteLogo}
+                        style={{ color: '#EF4444', fontSize: '0.72rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#B91C1C')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#EF4444')}
+                      >
+                        Eliminar logo
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <label style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  width: '100%', height: 88,
+                  border: '2px dashed var(--border-strong)', borderRadius: 12,
+                  cursor: logoUploading ? 'not-allowed' : 'pointer',
+                  background: 'var(--bg3)', transition: 'border-color 0.2s, background 0.2s',
+                }}
+                  onMouseEnter={e => { if (!logoUploading) { e.currentTarget.style.borderColor = '#4EC7F5'; e.currentTarget.style.background = 'rgba(78,199,245,0.04)' } }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--bg3)' }}
+                >
+                  <input type="file" style={{ display: 'none' }}
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    onChange={handleLogoUpload} disabled={logoUploading} />
+                  {logoUploading ? (
+                    <span style={{ color: 'var(--text3)', fontSize: '0.78rem' }}>Subiendo...</span>
+                  ) : (
+                    <>
+                      <svg width={22} height={22} fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style={{ color: 'var(--text3)', marginBottom: 4 }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span style={{ color: 'var(--text3)', fontSize: '0.72rem' }}>PNG, JPG, SVG · máx. 2 MB</span>
+                    </>
+                  )}
+                </label>
+                {logoError && <p style={{ color: '#DC2626', fontSize: '0.72rem', marginTop: 4 }}>{logoError}</p>}
+                <p style={{ color: 'var(--text3)', fontSize: '0.68rem', marginTop: 4 }}>
+                  El logo aparecerá en el encabezado de tus reportes PDF y PPTX.
+                </p>
+              </Field>
+            </div>
             <div className="col-span-2">
               <Field label="Nombre de la empresa">
                 <input value={form.company_name} onChange={e => set('company_name', e.target.value)}

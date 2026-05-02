@@ -42,7 +42,8 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             result['pdf_url'] = f"/api/reports/download/{job_id}/pdf"
 
         if 'pptx' in formats:
-            pptx_bytes = generate_pptx(analysis)
+            profile = file_data.get('company_profile', {})
+            pptx_bytes = generate_pptx(analysis, profile)
             files_store[f"{job_id}_pptx"] = pptx_bytes
             result['pptx_url'] = f"/api/reports/download/{job_id}/pptx"
 
