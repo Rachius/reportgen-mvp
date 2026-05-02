@@ -14,6 +14,7 @@ router = APIRouter()
 jobs: dict = {}
 files_store: dict = {}
 
+
 async def get_current_user(token_data: dict = Depends(verify_token)):
     return await get_or_create_user(
         firebase_uid=token_data["uid"],
@@ -47,7 +48,6 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             files_store[f"{job_id}_pptx"] = pptx_bytes
             result['pptx_url'] = f"/api/reports/download/{job_id}/pptx"
 
-        # Guardar en DB
         from app.services.db_service import database
         import uuid as uuid_lib
         await database.execute("""
@@ -62,13 +62,13 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             "pdf_url": result.get('pdf_url', ''),
             "pptx_url": result.get('pptx_url', ''),
         })
-        try:
-    from app.services.subscription_service import increment_report_usage
-    await increment_report_usage(str(file_data.get('user_id', '')))
-    except Exception:
-    pass  # No bloquear la descarga si falla el increment
 
-jobs[job_id].update(result)
+        try:
+            await increment_report_usage(str(file_data.get('user_id', '')))
+        except Exception:
+            pass
+
+        jobs[job_id].update(result)
 
     except Exception as e:
         jobs[job_id].update({
@@ -76,10 +76,6 @@ jobs[job_id].update(result)
             'progress': 0,
             'message': f'Error: {str(e)}'
         })
-
-
-
-
 
 
 @router.post('/reports/generate', response_model=GenerateResponse)
@@ -103,8 +99,6 @@ async def generate_report(
 
     profile = await get_profile(user["id"])
     file_data['company_profile'] = profile
-
-
     file_data['user_id'] = str(user["id"])
 
     jobs[job_id] = {
@@ -118,6 +112,7 @@ async def generate_report(
     background_tasks.add_task(process_report, job_id, file_data, formats_list)
     return {'job_id': job_id}
 
+
 @router.get('/reports/status/{job_id}', response_model=StatusResponse)
 def get_status(job_id: str):
     if job_id not in jobs:
@@ -130,6 +125,7 @@ def get_status(job_id: str):
     job = jobs[job_id]
     return StatusResponse(job_id=job_id, **job)
 
+
 @router.get('/reports/download/{job_id}/pdf')
 def download_pdf(job_id: str):
     key = f"{job_id}_pdf"
@@ -141,6 +137,7 @@ def download_pdf(job_id: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=reporte_{job_id[:8]}.pdf"}
     )
+
 
 @router.get('/reports/download/{job_id}/pptx')
 def download_pptx(job_id: str):

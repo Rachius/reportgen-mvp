@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     gcs_bucket_name: str
     gcp_region: str
     database_url: str
-    firebase_credentials_path: str
+    firebase_credentials_path: str = "/secrets/firebase/credentials.json"
     mp_access_token: str
     mp_public_key: str = ""
     mp_webhook_secret: str = ""
