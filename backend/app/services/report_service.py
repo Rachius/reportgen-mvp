@@ -6,7 +6,7 @@ import io
 
 def generate_pdf(analysis: dict, report_type: str = "ventas", profile: dict = None) -> bytes:
     BuilderClass = get_builder(report_type)
-builder = BuilderClass(analysis, profile)
+    builder = BuilderClass(analysis, profile)
     return builder.build_pdf()
 
 def add_logo_to_slide(slide, logo_url: str):
