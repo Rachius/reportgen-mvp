@@ -1,6 +1,5 @@
 from jinja2 import Environment, FileSystemLoader
-from xhtml2pdf import pisa
-import io
+import weasyprint
 import os
 from typing import Optional
 
@@ -31,10 +30,12 @@ class BaseReportBuilder:
         return template.render(**self.get_context())
 
     def build_pdf(self) -> bytes:
-        html = self.render_html()
-        buffer = io.BytesIO()
-        pisa.CreatePDF(io.StringIO(html), dest=buffer, encoding='utf-8')
-        return buffer.getvalue()
+        html_content = self.render_html()
+        return weasyprint.HTML(string=html_content).write_pdf()
+
+
+def generate_pdf_from_html(html_content: str) -> bytes:
+    return weasyprint.HTML(string=html_content).write_pdf()
 
 
 def get_logo_as_base64(logo_url: str) -> Optional[str]:

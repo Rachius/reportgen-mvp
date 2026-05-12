@@ -48,7 +48,6 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             files_store[f"{job_id}_pptx"] = pptx_bytes
             result['pptx_url'] = f"/api/reports/download/{job_id}/pptx"
 
-        # Guardar en DB
         from app.services.db_service import database
         import uuid as uuid_lib
         await database.execute("""
@@ -64,7 +63,6 @@ async def process_report(job_id: str, file_data: dict, formats: list):
             "pptx_url": result.get('pptx_url', ''),
         })
 
-        # Incrementar uso solo si el reporte se generó exitosamente
         try:
             await increment_report_usage(str(file_data.get('user_id', '')))
         except Exception:
