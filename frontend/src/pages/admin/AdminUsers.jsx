@@ -48,12 +48,19 @@ export default function AdminUsers() {
     } finally { setActionLoading(null) }
   }
 
-  const handleSetPlan = async (userId, plan) => {
+  const handleSetPlan = async (userId, currentPlan) => {
+    const newPlan = currentPlan === 'free' ? 'starter' : 'free'
+    const action = newPlan === 'starter' ? 'activar Starter' : 'revertir a Free'
+    if (!window.confirm(`¿Confirmar ${action} para este usuario?`)) return
     setActionLoading(userId + '-plan')
     try {
-      await setUserPlan(userId, plan)
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan } : u))
-    } finally { setActionLoading(null) }
+      await setUserPlan(userId, newPlan)
+      load(page)
+    } catch {
+      alert('Error al cambiar el plan')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   const thStyle = {
@@ -152,7 +159,7 @@ export default function AdminUsers() {
                             )}
                             {(!u.plan || u.plan === 'free') && (
                               <button
-                                onClick={() => handleSetPlan(u.id, 'starter')}
+                                onClick={() => handleSetPlan(u.id, u.plan || 'free')}
                                 disabled={actionLoading === u.id + '-plan'}
                                 style={{ padding: '3px 10px', borderRadius: 3, border: '1px solid rgba(78,199,245,0.4)', background: 'rgba(78,199,245,0.1)', color: '#4EC7F5', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}
                               >
@@ -161,7 +168,7 @@ export default function AdminUsers() {
                             )}
                             {u.plan === 'starter' && (
                               <button
-                                onClick={() => handleSetPlan(u.id, 'free')}
+                                onClick={() => handleSetPlan(u.id, u.plan)}
                                 disabled={actionLoading === u.id + '-plan'}
                                 style={{ padding: '3px 10px', borderRadius: 3, border: '1px solid rgba(74,96,120,0.5)', background: 'rgba(74,96,120,0.15)', color: '#7A9AB8', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}
                               >
