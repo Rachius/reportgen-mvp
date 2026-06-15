@@ -57,3 +57,33 @@ async def answer_consultation(
 @router.get("/reports")
 async def reports(claims: dict = Depends(verify_admin)):
     return await admin_service.get_recent_reports()
+
+
+@router.put("/users/{user_id}/plan")
+async def set_user_plan(
+    user_id: str,
+    body: dict,
+    claims: dict = Depends(verify_admin),
+):
+    from app.services.db_service import database
+    plan = body.get("plan", "free")
+    reports_limit = 10 if plan == "starter" else 3
+    consultations_limit = 3 if plan == "starter" else 0
+    await database.execute(
+        """
+        UPDATE subscriptions
+        SET plan = :plan,
+            reports_limit = :reports_limit,
+            consultations_limit = :consultations_limit,
+            status = 'active',
+            updated_at = NOW()
+        WHERE user_id = :user_id
+        """,
+        values={
+            "plan": plan,
+            "reports_limit": reports_limit,
+            "consultations_limit": consultations_limit,
+            "user_id": user_id,
+        },
+    )
+    return {"status": "ok", "plan": plan}

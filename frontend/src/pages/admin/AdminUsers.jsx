@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from './AdminLayout'
-import { getUsers, approveUser, blockUser } from '../../lib/adminApi'
+import { getUsers, approveUser, blockUser, setUserPlan } from '../../lib/adminApi'
 import { useAuth } from '../../context/AuthContext'
 
 const PLAN_STYLES = {
@@ -45,6 +45,14 @@ export default function AdminUsers() {
     try {
       await blockUser(userId)
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, approved: false, status: 'canceled' } : u))
+    } finally { setActionLoading(null) }
+  }
+
+  const handleSetPlan = async (userId, plan) => {
+    setActionLoading(userId + '-plan')
+    try {
+      await setUserPlan(userId, plan)
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan } : u))
     } finally { setActionLoading(null) }
   }
 
@@ -123,21 +131,12 @@ export default function AdminUsers() {
                         {isMe ? (
                           <span style={{ color: '#4A6078', fontSize: '0.75rem', fontStyle: 'italic' }}>Sos vos</span>
                         ) : (
-                          <div style={{ display: 'flex', gap: 6 }}>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                             {!u.approved && (
                               <button
                                 onClick={() => handleApprove(u.id)}
                                 disabled={actionLoading === u.id + '-approve'}
-                                style={{
-                                  padding: '3px 10px',
-                                  borderRadius: 3,
-                                  border: '1px solid rgba(16,185,129,0.4)',
-                                  background: 'rgba(16,185,129,0.1)',
-                                  color: '#6EE7B7',
-                                  fontSize: '0.72rem',
-                                  cursor: 'pointer',
-                                  fontWeight: 500,
-                                }}
+                                style={{ padding: '3px 10px', borderRadius: 3, border: '1px solid rgba(16,185,129,0.4)', background: 'rgba(16,185,129,0.1)', color: '#6EE7B7', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}
                               >
                                 Aprobar
                               </button>
@@ -146,18 +145,27 @@ export default function AdminUsers() {
                               <button
                                 onClick={() => handleBlock(u.id)}
                                 disabled={actionLoading === u.id + '-block'}
-                                style={{
-                                  padding: '3px 10px',
-                                  borderRadius: 3,
-                                  border: '1px solid rgba(220,38,38,0.4)',
-                                  background: 'rgba(220,38,38,0.1)',
-                                  color: '#FCA5A5',
-                                  fontSize: '0.72rem',
-                                  cursor: 'pointer',
-                                  fontWeight: 500,
-                                }}
+                                style={{ padding: '3px 10px', borderRadius: 3, border: '1px solid rgba(220,38,38,0.4)', background: 'rgba(220,38,38,0.1)', color: '#FCA5A5', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}
                               >
                                 Bloquear
+                              </button>
+                            )}
+                            {(!u.plan || u.plan === 'free') && (
+                              <button
+                                onClick={() => handleSetPlan(u.id, 'starter')}
+                                disabled={actionLoading === u.id + '-plan'}
+                                style={{ padding: '3px 10px', borderRadius: 3, border: '1px solid rgba(78,199,245,0.4)', background: 'rgba(78,199,245,0.1)', color: '#4EC7F5', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}
+                              >
+                                {actionLoading === u.id + '-plan' ? '...' : 'Activar Starter'}
+                              </button>
+                            )}
+                            {u.plan === 'starter' && (
+                              <button
+                                onClick={() => handleSetPlan(u.id, 'free')}
+                                disabled={actionLoading === u.id + '-plan'}
+                                style={{ padding: '3px 10px', borderRadius: 3, border: '1px solid rgba(74,96,120,0.5)', background: 'rgba(74,96,120,0.15)', color: '#7A9AB8', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}
+                              >
+                                {actionLoading === u.id + '-plan' ? '...' : 'Revertir a Free'}
                               </button>
                             )}
                           </div>

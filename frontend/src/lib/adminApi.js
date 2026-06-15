@@ -47,3 +47,8 @@ export async function getUserConsultations() {
   const { data } = await api.get('/api/consultations')
   return data
 }
+
+export async function setUserPlan(userId, plan) {
+  const { data } = await api.put(`/api/admin/users/${userId}/plan`, { plan })
+  return data
+}

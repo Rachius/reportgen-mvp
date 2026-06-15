@@ -3,9 +3,9 @@ from app.services.auth_service import verify_token, get_or_create_user
 from app.services.subscription_service import (
     get_or_create_subscription,
     create_checkout_url,
-    handle_webhook,
 )
 from app.config import settings
+import json
 
 router = APIRouter()
 
@@ -37,16 +37,69 @@ async def checkout(user=Depends(get_current_user)):
 
 @router.post("/subscription/webhook")
 async def webhook(request: Request):
-    payload = await request.body()
-    data = await request.json()
+    try:
+        body = await request.body()
+        data = json.loads(body) if body else {}
+    except Exception:
+        data = {}
 
-    # Validar que viene de MP en producción
-    if settings.environment != "development":
-        x_signature = request.headers.get("x-signature", "")
-        x_request_id = request.headers.get("x-request-id", "")
-        if not verify_mp_signature(payload, x_signature, x_request_id):
-            from fastapi import HTTPException
-            raise HTTPException(400, "Firma inválida")
+    params = dict(request.query_params)
 
-    await handle_webhook(data)
-    return {"received": True}
+    topic = data.get("type") or data.get("topic") or params.get("topic", "")
+    payment_id = (
+        data.get("data", {}).get("id") or
+        data.get("id") or
+        params.get("id", "")
+    )
+
+    if not payment_id:
+        return {"status": "ignored"}
+
+    if topic not in ("payment", "merchant_order", ""):
+        return {"status": "ignored"}
+
+    try:
+        import mercadopago
+        sdk = mercadopago.SDK(settings.mp_access_token)
+
+        if topic == "merchant_order":
+            order = sdk.merchant_order().get(payment_id)
+            order_data = order.get("response", {})
+            payments = order_data.get("payments", [])
+            paid_amount = sum(
+                p["total_paid_amount"]
+                for p in payments
+                if p["status"] == "approved"
+            )
+            order_amount = order_data.get("total_amount", 0)
+            if paid_amount >= order_amount and order_amount > 0:
+                payer_email = order_data.get("payer", {}).get("email", "")
+                if payer_email:
+                    from app.services.db_service import database
+                    user = await database.fetch_one(
+                        "SELECT id FROM users WHERE email = :email",
+                        values={"email": payer_email}
+                    )
+                    if user:
+                        from app.services.subscription_service import activate_starter_plan
+                        await activate_starter_plan(str(user["id"]), str(payment_id))
+        else:
+            payment = sdk.payment().get(payment_id)
+            payment_data = payment.get("response", {})
+            if payment_data.get("status") == "approved":
+                payer_email = payment_data.get("payer", {}).get("email", "")
+                if payer_email:
+                    from app.services.db_service import database
+                    user = await database.fetch_one(
+                        "SELECT id FROM users WHERE email = :email",
+                        values={"email": payer_email}
+                    )
+                    if user:
+                        from app.services.subscription_service import activate_starter_plan
+                        await activate_starter_plan(str(user["id"]), str(payment_id))
+
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return {"status": "error", "detail": str(e)}
+
+    return {"status": "ok"}
