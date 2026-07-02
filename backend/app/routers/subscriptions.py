@@ -45,25 +45,34 @@ async def webhook(request: Request):
 
     params = dict(request.query_params)
 
-    topic = data.get("type") or data.get("topic") or params.get("topic", "")
-    payment_id = (
+    # MP envía "data.id" como key literal en query params
+    resource_id = (
         data.get("data", {}).get("id") or
         data.get("id") or
+        params.get("data.id") or
         params.get("id", "")
     )
 
-    if not payment_id:
-        return {"status": "ignored"}
+    # MP envía type como "topic_merchant_order_wh" o "payment"
+    raw_type = (
+        data.get("type") or
+        data.get("topic") or
+        params.get("type") or
+        params.get("topic", "")
+    )
 
-    if topic not in ("payment", "merchant_order", ""):
-        return {"status": "ignored"}
+    is_merchant_order = "merchant_order" in raw_type
+    is_payment = "payment" in raw_type and "merchant_order" not in raw_type
+
+    if not resource_id:
+        return {"status": "ignored", "reason": "no_resource_id"}
 
     try:
         import mercadopago
         sdk = mercadopago.SDK(settings.mp_access_token)
 
-        if topic == "merchant_order":
-            order = sdk.merchant_order().get(payment_id)
+        if is_merchant_order:
+            order = sdk.merchant_order().get(resource_id)
             order_data = order.get("response", {})
             payments = order_data.get("payments", [])
             paid_amount = sum(
@@ -82,9 +91,11 @@ async def webhook(request: Request):
                     )
                     if user:
                         from app.services.subscription_service import activate_starter_plan
-                        await activate_starter_plan(str(user["id"]), str(payment_id))
-        else:
-            payment = sdk.payment().get(payment_id)
+                        await activate_starter_plan(str(user["id"]), str(resource_id))
+                        return {"status": "activated", "via": "merchant_order"}
+
+        elif is_payment:
+            payment = sdk.payment().get(resource_id)
             payment_data = payment.get("response", {})
             if payment_data.get("status") == "approved":
                 payer_email = payment_data.get("payer", {}).get("email", "")
@@ -96,10 +107,11 @@ async def webhook(request: Request):
                     )
                     if user:
                         from app.services.subscription_service import activate_starter_plan
-                        await activate_starter_plan(str(user["id"]), str(payment_id))
+                        await activate_starter_plan(str(user["id"]), str(resource_id))
+                        return {"status": "activated", "via": "payment"}
+
+        return {"status": "processed_no_action", "type": raw_type, "id": resource_id}
 
     except Exception as e:
         print(f"Webhook error: {e}")
         return {"status": "error", "detail": str(e)}
-
-    return {"status": "ok"}

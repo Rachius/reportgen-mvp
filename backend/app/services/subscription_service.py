@@ -66,11 +66,11 @@ async def create_checkout_url(user_id: str, user_email: str) -> str:
     }],
     "payer": {"email": user_email},
     "back_urls": {
-        "success": f"{settings.app_base_url}/subscription/success",
-        "failure": f"{settings.app_base_url}/subscription/cancel",
-        "pending": f"{settings.app_base_url}/subscription/pending",
+        "success": f"{settings.frontend_base_url}/subscription/success",
+        "failure": f"{settings.frontend_base_url}/subscription/cancel",
+        "pending": f"{settings.frontend_base_url}/subscription/pending",
     },
-    "notification_url": f"https://particularly-unsquared-zaria.ngrok-free.dev/api/subscription/webhook",
+    "notification_url": f"{settings.app_base_url}/api/subscription/webhook",
     "metadata": {"user_id": str(user_id)},
     "statement_descriptor": "REPORTGEN",
 }
